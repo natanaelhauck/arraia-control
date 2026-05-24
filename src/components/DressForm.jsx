@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-const initialForm = {
+const emptyForm = {
   code: '',
   size: '',
   color: '',
@@ -8,9 +8,51 @@ const initialForm = {
   status: 'disponivel',
 }
 
-export default function DressForm({ dresses, onSubmit }) {
-  const [formData, setFormData] = useState(initialForm)
+function getInitialForm(initialDress) {
+  if (!initialDress) {
+    return emptyForm
+  }
+
+  return {
+    code: initialDress.code || '',
+    size: initialDress.size || '',
+    color: initialDress.color || '',
+    photoUrl: initialDress.photoUrl || '',
+    status: initialDress.status || 'disponivel',
+  }
+}
+
+export default function DressForm({
+  dresses,
+  onSubmit,
+  initialDress = null,
+  title = 'Cadastrar vestido',
+  eyebrow = 'Novo item',
+  submitLabel = 'Salvar vestido',
+  onCancel,
+  statusLocked = false,
+  statusHint = '',
+  variant = 'panel',
+}) {
+  const [formData, setFormData] = useState(() => getInitialForm(initialDress))
   const [error, setError] = useState('')
+  const isEditing = Boolean(initialDress)
+
+  useEffect(() => {
+    setFormData(getInitialForm(initialDress))
+    setError('')
+  }, [initialDress])
+
+  const statusOptions = useMemo(() => {
+    if (statusLocked) {
+      return [{ value: formData.status, label: 'Alugado' }]
+    }
+
+    return [
+      { value: 'disponivel', label: 'Disponível' },
+      { value: 'reservado', label: 'Reservado' },
+    ]
+  }, [formData.status, statusLocked])
 
   function updateField(event) {
     const { name, value } = event.target
@@ -21,7 +63,9 @@ export default function DressForm({ dresses, onSubmit }) {
     event.preventDefault()
 
     const code = formData.code.trim().toUpperCase()
-    const codeAlreadyExists = dresses.some((dress) => dress.code.toUpperCase() === code)
+    const codeAlreadyExists = dresses.some(
+      (dress) => dress.id !== initialDress?.id && dress.code.toUpperCase() === code,
+    )
 
     if (!code || !formData.size.trim() || !formData.color.trim()) {
       setError('Preencha código, tamanho e cor.')
@@ -34,16 +78,21 @@ export default function DressForm({ dresses, onSubmit }) {
     }
 
     onSubmit(formData)
-    setFormData(initialForm)
     setError('')
+
+    if (!isEditing) {
+      setFormData(emptyForm)
+    }
   }
 
+  const Wrapper = variant === 'panel' ? 'section' : 'div'
+
   return (
-    <section className="form-panel" aria-labelledby="new-dress-title">
+    <Wrapper className={variant === 'panel' ? 'form-panel' : 'inline-form'}>
       <div className="section-heading tight">
         <div>
-          <p className="eyebrow">Novo item</p>
-          <h2 id="new-dress-title">Cadastrar vestido</h2>
+          <p className="eyebrow">{eyebrow}</p>
+          <h2>{title}</h2>
         </div>
       </div>
 
@@ -91,18 +140,34 @@ export default function DressForm({ dresses, onSubmit }) {
 
         <label>
           Status
-          <select name="status" value={formData.status} onChange={updateField}>
-            <option value="disponivel">Disponível</option>
-            <option value="reservado">Reservado</option>
+          <select
+            name="status"
+            value={formData.status}
+            onChange={updateField}
+            disabled={statusLocked}
+          >
+            {statusOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </label>
 
+        {statusHint ? <p className="form-hint">{statusHint}</p> : null}
         {error ? <p className="form-error">{error}</p> : null}
 
-        <button className="button button-primary" type="submit">
-          Salvar vestido
-        </button>
+        <div className="form-actions">
+          {onCancel ? (
+            <button className="button button-secondary" type="button" onClick={onCancel}>
+              Cancelar
+            </button>
+          ) : null}
+          <button className="button button-primary" type="submit">
+            {submitLabel}
+          </button>
+        </div>
       </form>
-    </section>
+    </Wrapper>
   )
 }

@@ -14,12 +14,14 @@ Sistema interno para gestão inicial de aluguel de vestidos de quadrilha.
 
 - Dashboard com total de vestidos, disponíveis, alugados e reservados
 - Lista de vestidos em cards
-- Busca por codigo, cor ou tamanho
+- Busca por código, cor ou tamanho
 - Filtro por status
 - Cadastro de novos vestidos
-- Modal de detalhes com foto, dados do vestido, aluguel atual e historico
-- Registro de aluguel com dados da cliente, datas, valor, sinal e observacoes
-- Marcação de devolução, movendo o aluguel atual para o histórico
+- Edição e exclusão de vestidos com confirmação
+- Modal de detalhes com foto, dados do vestido, aluguel atual e histórico
+- Registro de aluguel com dados da cliente, datas, valor, sinal e observações
+- Edição do aluguel atual para corrigir dados preenchidos errado
+- Marcação de devolução com confirmação, movendo o aluguel atual para o histórico
 - Dados iniciais de exemplo
 
 ## Como rodar

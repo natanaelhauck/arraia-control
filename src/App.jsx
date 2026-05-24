@@ -15,19 +15,37 @@ function normalizeSearch(value) {
   return value.trim().toLowerCase()
 }
 
+function createId() {
+  return globalThis.crypto?.randomUUID
+    ? globalThis.crypto.randomUUID()
+    : `id-${Date.now()}-${Math.random()}`
+}
+
 export default function App() {
   const [dresses, setDresses] = useState(() => loadDresses())
   const [filters, setFilters] = useState(emptyFilters)
   const [selectedDressId, setSelectedDressId] = useState(null)
+  const [storageNotice, setStorageNotice] = useState(null)
 
-  function persist(nextDresses) {
+  function persist(nextDresses, successMessage = 'Alterações salvas neste navegador.') {
     setDresses(nextDresses)
-    saveDresses(nextDresses)
+
+    const didSave = saveDresses(nextDresses)
+    setStorageNotice(
+      didSave
+        ? { type: 'success', message: successMessage }
+        : {
+            type: 'error',
+            message: 'Não foi possível salvar no localStorage. Verifique o navegador.',
+          },
+    )
+
+    return didSave
   }
 
   function handleCreateDress(dressData) {
     const nextDress = {
-      id: crypto.randomUUID(),
+      id: createId(),
       code: dressData.code.trim().toUpperCase(),
       size: dressData.size.trim().toUpperCase(),
       color: dressData.color.trim(),
@@ -38,7 +56,35 @@ export default function App() {
       createdAt: new Date().toISOString(),
     }
 
-    persist([nextDress, ...dresses])
+    persist([nextDress, ...dresses], `Vestido ${nextDress.code} cadastrado.`)
+  }
+
+  function handleUpdateDress(dressId, dressData) {
+    const nextDresses = dresses.map((dress) => {
+      if (dress.id !== dressId) {
+        return dress
+      }
+
+      return {
+        ...dress,
+        code: dressData.code.trim().toUpperCase(),
+        size: dressData.size.trim().toUpperCase(),
+        color: dressData.color.trim(),
+        photoUrl: dressData.photoUrl.trim(),
+        status: dress.currentRental ? 'alugado' : dressData.status,
+        updatedAt: new Date().toISOString(),
+      }
+    })
+
+    persist(nextDresses, 'Dados do vestido atualizados.')
+  }
+
+  function handleDeleteDress(dressId) {
+    const dressToDelete = dresses.find((dress) => dress.id === dressId)
+    const nextDresses = dresses.filter((dress) => dress.id !== dressId)
+
+    setSelectedDressId(null)
+    persist(nextDresses, `Vestido ${dressToDelete?.code || ''} excluído.`)
   }
 
   function handleRegisterRental(dressId, rentalData) {
@@ -51,7 +97,7 @@ export default function App() {
         ...dress,
         status: 'alugado',
         currentRental: {
-          id: crypto.randomUUID(),
+          id: createId(),
           ...rentalData,
           value: Number(rentalData.value),
           depositPaid: Number(rentalData.depositPaid),
@@ -60,7 +106,28 @@ export default function App() {
       }
     })
 
-    persist(nextDresses)
+    persist(nextDresses, 'Aluguel registrado.')
+  }
+
+  function handleUpdateCurrentRental(dressId, rentalData) {
+    const nextDresses = dresses.map((dress) => {
+      if (dress.id !== dressId || !dress.currentRental) {
+        return dress
+      }
+
+      return {
+        ...dress,
+        currentRental: {
+          ...dress.currentRental,
+          ...rentalData,
+          value: Number(rentalData.value),
+          depositPaid: Number(rentalData.depositPaid),
+          updatedAt: new Date().toISOString(),
+        },
+      }
+    })
+
+    persist(nextDresses, 'Aluguel atual atualizado.')
   }
 
   function handleMarkReturned(dressId) {
@@ -82,7 +149,7 @@ export default function App() {
       }
     })
 
-    persist(nextDresses)
+    persist(nextDresses, 'Vestido marcado como devolvido.')
   }
 
   const selectedDress = useMemo(
@@ -102,6 +169,14 @@ export default function App() {
     })
   }, [dresses, filters])
 
+  const hasActiveFilters = filters.status !== 'todos' || filters.query.trim() !== ''
+  const emptyStateTitle =
+    dresses.length === 0 ? 'Nenhum vestido cadastrado ainda' : 'Nenhum vestido encontrado'
+  const emptyStateDescription =
+    dresses.length === 0
+      ? 'Cadastre o primeiro vestido usando o formulário de cadastro.'
+      : 'Ajuste a busca ou limpe os filtros para ver o acervo completo.'
+
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -109,22 +184,35 @@ export default function App() {
           <p className="eyebrow">Gestão de aluguel</p>
           <h1>Arraiá Control</h1>
         </div>
-        <p className="header-summary">
-          Controle vestidos, reservas e devoluções em um fluxo simples para o dia a dia.
-        </p>
+        <div className="header-side">
+          <p className="header-summary">
+            Controle vestidos, reservas e devoluções em um fluxo simples para o dia a dia.
+          </p>
+          <p className="storage-pill">Dados salvos automaticamente neste navegador</p>
+        </div>
       </header>
 
       <main className="app-main">
+        {storageNotice ? (
+          <div className={`notice notice-${storageNotice.type}`} role="status">
+            {storageNotice.message}
+          </div>
+        ) : null}
+
         <Dashboard dresses={dresses} />
 
-        <section className="workspace-grid" aria-label="Area principal">
+        <section className="workspace-grid" aria-label="Área principal">
           <div className="content-stack">
-            <Filters filters={filters} onChange={setFilters} />
+            <Filters
+              filters={filters}
+              onChange={setFilters}
+              onReset={() => setFilters(emptyFilters)}
+            />
 
             <section className="dress-list-section" aria-labelledby="dress-list-title">
               <div className="section-heading">
                 <div>
-                <p className="eyebrow">Acervo</p>
+                  <p className="eyebrow">Acervo</p>
                   <h2 id="dress-list-title">Vestidos cadastrados</h2>
                 </div>
                 <span className="result-count">
@@ -144,8 +232,17 @@ export default function App() {
                 </div>
               ) : (
                 <div className="empty-state">
-                  <h3>Nenhum vestido encontrado</h3>
-                  <p>Revise a busca ou selecione outro status.</p>
+                  <h3>{emptyStateTitle}</h3>
+                  <p>{emptyStateDescription}</p>
+                  {hasActiveFilters ? (
+                    <button
+                      className="button button-secondary"
+                      type="button"
+                      onClick={() => setFilters(emptyFilters)}
+                    >
+                      Limpar filtros
+                    </button>
+                  ) : null}
                 </div>
               )}
             </section>
@@ -160,8 +257,12 @@ export default function App() {
       {selectedDress ? (
         <DressDetailsModal
           dress={selectedDress}
+          dresses={dresses}
           onClose={() => setSelectedDressId(null)}
+          onDeleteDress={handleDeleteDress}
           onRegisterRental={handleRegisterRental}
+          onUpdateDress={handleUpdateDress}
+          onUpdateCurrentRental={handleUpdateCurrentRental}
           onMarkReturned={handleMarkReturned}
         />
       ) : null}

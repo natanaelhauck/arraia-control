@@ -1,5 +1,6 @@
 import DressImage from './DressImage.jsx'
 import StatusBadge from './StatusBadge.jsx'
+import { formatDate } from '../utils/formatters.js'
 
 export default function DressCard({ dress, onDetails }) {
   return (
@@ -25,6 +26,13 @@ export default function DressCard({ dress, onDetails }) {
             <dd>{dress.color}</dd>
           </div>
         </dl>
+
+        {dress.currentRental ? (
+          <p className="card-note">
+            Cliente: {dress.currentRental.customerName} - devolução{' '}
+            {formatDate(dress.currentRental.expectedReturnDate)}
+          </p>
+        ) : null}
 
         <button className="button button-primary" type="button" onClick={onDetails}>
           Ver detalhes

@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
-const initialForm = {
+const emptyForm = {
   customerName: '',
   phone: '',
   address: '',
@@ -12,9 +12,40 @@ const initialForm = {
   notes: '',
 }
 
-export default function RentalForm({ dress, onSubmit }) {
-  const [formData, setFormData] = useState(initialForm)
+function getInitialForm(initialRental) {
+  if (!initialRental) {
+    return emptyForm
+  }
+
+  return {
+    customerName: initialRental.customerName || '',
+    phone: initialRental.phone || '',
+    address: initialRental.address || '',
+    partyDate: initialRental.partyDate || '',
+    pickupDate: initialRental.pickupDate || '',
+    expectedReturnDate: initialRental.expectedReturnDate || '',
+    value: String(initialRental.value ?? ''),
+    depositPaid: String(initialRental.depositPaid ?? ''),
+    notes: initialRental.notes || '',
+  }
+}
+
+export default function RentalForm({
+  dress,
+  onSubmit,
+  initialRental = null,
+  title = 'Registrar aluguel',
+  submitLabel = 'Registrar aluguel',
+  onCancel,
+}) {
+  const [formData, setFormData] = useState(() => getInitialForm(initialRental))
   const [error, setError] = useState('')
+  const isEditing = Boolean(initialRental)
+
+  useEffect(() => {
+    setFormData(getInitialForm(initialRental))
+    setError('')
+  }, [initialRental])
 
   function updateField(event) {
     const { name, value } = event.target
@@ -41,19 +72,27 @@ export default function RentalForm({ dress, onSubmit }) {
       return
     }
 
+    if (Number(formData.value) <= 0) {
+      setError('Informe um valor de aluguel maior que zero.')
+      return
+    }
+
     if (Number(formData.depositPaid) > Number(formData.value)) {
       setError('O sinal pago não pode ser maior que o valor do aluguel.')
       return
     }
 
     onSubmit(dress.id, formData)
-    setFormData(initialForm)
     setError('')
+
+    if (!isEditing) {
+      setFormData(emptyForm)
+    }
   }
 
   return (
     <>
-      <h3>Registrar aluguel</h3>
+      <h3>{title}</h3>
       <form className="rental-form" onSubmit={handleSubmit}>
         <label>
           Nome da cliente
@@ -131,9 +170,16 @@ export default function RentalForm({ dress, onSubmit }) {
 
         {error ? <p className="form-error wide">{error}</p> : null}
 
-        <button className="button button-primary wide" type="submit">
-          Registrar aluguel
-        </button>
+        <div className="form-actions wide">
+          {onCancel ? (
+            <button className="button button-secondary" type="button" onClick={onCancel}>
+              Cancelar
+            </button>
+          ) : null}
+          <button className="button button-primary" type="submit">
+            {submitLabel}
+          </button>
+        </div>
       </form>
     </>
   )

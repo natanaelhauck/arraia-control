@@ -12,11 +12,39 @@
 .form-panel,
 .filters-panel,
 .detail-section,
+.notice,
 .empty-state {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
   box-shadow: 0 8px 28px rgba(78, 47, 20, 0.06);
+}
+
+.storage-pill {
+  width: fit-content;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid rgba(40, 122, 84, 0.2);
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.notice {
+  margin-bottom: 1rem;
+  padding: 0.8rem 1rem;
+  font-weight: 800;
+}
+
+.notice-success {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.notice-error {
+  background: #ffe7e7;
+  color: var(--primary-strong);
 }
 
 .metric-card {
@@ -40,7 +68,8 @@
 
 .filters-panel {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px;
+  grid-template-columns: minmax(0, 1fr) 220px auto;
+  align-items: end;
   gap: 1rem;
   padding: 1rem;
 }
@@ -127,6 +156,16 @@
   grid-template-columns: 90px 1fr;
 }
 
+.card-note {
+  padding: 0.7rem;
+  border-radius: 6px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: 0.88rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
 .detail-list {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -197,6 +236,32 @@
   color: #fff;
 }
 
+.button-secondary {
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.button-secondary:hover {
+  background: #fff1d9;
+}
+
+.button-danger {
+  background: #fee1e1;
+  color: var(--primary-strong);
+}
+
+.button-danger:hover {
+  background: #ffd1d1;
+}
+
+.button-row,
+.detail-media-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
 .icon-button {
   display: inline-grid;
   place-items: center;
@@ -220,6 +285,16 @@
   padding: 1rem;
 }
 
+.detail-media {
+  display: grid;
+  gap: 0.75rem;
+  align-self: start;
+}
+
+.detail-media-actions .button {
+  flex: 1 1 150px;
+}
+
 .history-list {
   display: grid;
   gap: 0.75rem;
@@ -240,10 +315,16 @@
 }
 
 .empty-state {
+  justify-items: center;
   display: grid;
-  gap: 0.35rem;
+  gap: 0.75rem;
   padding: 2rem;
   text-align: center;
+}
+
+.empty-state p {
+  max-width: 36rem;
+  color: var(--muted);
 }
 
 @media (max-width: 760px) {
@@ -251,6 +332,19 @@
   .detail-list,
   .detail-list.compact {
     grid-template-columns: 1fr;
+  }
+
+  .detail-title-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .button-row {
+    width: 100%;
+  }
+
+  .button-row .button {
+    flex: 1 1 180px;
   }
 
   .dress-image-large {

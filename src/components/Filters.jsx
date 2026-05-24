@@ -1,4 +1,6 @@
-export default function Filters({ filters, onChange }) {
+export default function Filters({ filters, onChange, onReset }) {
+  const hasActiveFilters = filters.status !== 'todos' || filters.query.trim() !== ''
+
   function updateField(event) {
     const { name, value } = event.target
     onChange({ ...filters, [name]: value })
@@ -7,12 +9,12 @@ export default function Filters({ filters, onChange }) {
   return (
     <section className="filters-panel" aria-label="Filtros de vestidos">
       <label>
-        Buscar
+        Buscar vestido
         <input
           name="query"
           value={filters.query}
           onChange={updateField}
-          placeholder="Código, cor ou tamanho"
+          placeholder="Digite código, cor ou tamanho"
           autoComplete="off"
         />
       </label>
@@ -26,6 +28,12 @@ export default function Filters({ filters, onChange }) {
           <option value="reservado">Reservados</option>
         </select>
       </label>
+
+      {hasActiveFilters ? (
+        <button className="button button-secondary" type="button" onClick={onReset}>
+          Limpar
+        </button>
+      ) : null}
     </section>
   )
 }
