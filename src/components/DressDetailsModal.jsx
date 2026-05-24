@@ -1,79 +1,28 @@
-import { useEffect, useState } from 'react'
-import DressForm from './DressForm.jsx'
-import RentalForm from './RentalForm.jsx'
 import DressImage from './DressImage.jsx'
+import RentalInfo from './RentalInfo.jsx'
 import StatusBadge from './StatusBadge.jsx'
-import { formatCurrency, formatDate } from '../utils/formatters.js'
-
-function RentalInfo({ rental }) {
-  return (
-    <dl className="detail-list">
-      <div>
-        <dt>Cliente</dt>
-        <dd>{rental.customerName}</dd>
-      </div>
-      <div>
-        <dt>Telefone</dt>
-        <dd>{rental.phone}</dd>
-      </div>
-      <div>
-        <dt>Endereço</dt>
-        <dd>{rental.address}</dd>
-      </div>
-      <div>
-        <dt>Data da festa</dt>
-        <dd>{formatDate(rental.partyDate)}</dd>
-      </div>
-      <div>
-        <dt>Retirada</dt>
-        <dd>{formatDate(rental.pickupDate)}</dd>
-      </div>
-      <div>
-        <dt>Devolução prevista</dt>
-        <dd>{formatDate(rental.expectedReturnDate)}</dd>
-      </div>
-      <div>
-        <dt>Valor</dt>
-        <dd>{formatCurrency(rental.value)}</dd>
-      </div>
-      <div>
-        <dt>Sinal pago</dt>
-        <dd>{formatCurrency(rental.depositPaid)}</dd>
-      </div>
-      {rental.notes ? (
-        <div className="wide">
-          <dt>Observações</dt>
-          <dd>{rental.notes}</dd>
-        </div>
-      ) : null}
-    </dl>
-  )
-}
+import { formatDate } from '../utils/formatters.js'
 
 export default function DressDetailsModal({
   dress,
-  dresses,
   onClose,
   onDeleteDress,
+  onEditDress,
   onRegisterRental,
-  onUpdateDress,
-  onUpdateCurrentRental,
+  onEditRental,
   onMarkReturned,
 }) {
-  const [mode, setMode] = useState('details')
-
-  useEffect(() => {
-    setMode('details')
-  }, [dress.id])
+  if (!dress) {
+    return null
+  }
 
   function confirmReturn() {
     const didConfirm = window.confirm(
-      `Confirmar devolução do vestido ${dress.code}? O aluguel atual será movido para o histórico.`,
+      `Confirmar devolução do vestido ${dress.codigo}? O aluguel atual será movido para o histórico.`,
     )
 
-    if (didConfirm) {
-      onMarkReturned(dress.id)
-      setMode('details')
+    if (didConfirm && dress.currentRental) {
+      onMarkReturned(dress.currentRental)
     }
   }
 
@@ -82,21 +31,9 @@ export default function DressDetailsModal({
       ? 'Este vestido está alugado. A exclusão removerá também o aluguel atual e o histórico.'
       : 'Esta ação removerá o vestido e o histórico de aluguéis.'
 
-    const didConfirm = window.confirm(`Excluir o vestido ${dress.code}?\n\n${warning}`)
-
-    if (didConfirm) {
-      onDeleteDress(dress.id)
+    if (window.confirm(`Excluir o vestido ${dress.codigo}?\n\n${warning}`)) {
+      onDeleteDress(dress)
     }
-  }
-
-  function submitDressEdit(dressData) {
-    onUpdateDress(dress.id, dressData)
-    setMode('details')
-  }
-
-  function submitRentalEdit(dressId, rentalData) {
-    onUpdateCurrentRental(dressId, rentalData)
-    setMode('details')
   }
 
   return (
@@ -110,7 +47,7 @@ export default function DressDetailsModal({
         <div className="modal-header">
           <div>
             <p className="eyebrow">Detalhes do vestido</p>
-            <h2 id="dress-details-title">{dress.code}</h2>
+            <h2 id="dress-details-title">{dress.codigo}</h2>
           </div>
           <button className="icon-button" type="button" aria-label="Fechar" onClick={onClose}>
             X
@@ -124,7 +61,7 @@ export default function DressDetailsModal({
               <button
                 className="button button-secondary"
                 type="button"
-                onClick={() => setMode('editDress')}
+                onClick={() => onEditDress(dress)}
               >
                 Editar vestido
               </button>
@@ -136,57 +73,40 @@ export default function DressDetailsModal({
 
           <div className="detail-content">
             <section className="detail-section">
-              {mode === 'editDress' ? (
-                <DressForm
-                  dresses={dresses}
-                  initialDress={dress}
-                  onSubmit={submitDressEdit}
-                  onCancel={() => setMode('details')}
-                  title="Editar vestido"
-                  eyebrow="Ajustes"
-                  submitLabel="Salvar alterações"
-                  statusLocked={dress.status === 'alugado'}
-                  statusHint={
-                    dress.status === 'alugado'
-                      ? 'O status fica como alugado enquanto existir aluguel ativo.'
-                      : ''
-                  }
-                  variant="inline"
-                />
-              ) : (
-                <>
-                  <div className="detail-title-row">
-                    <h3>Informações do vestido</h3>
-                    <StatusBadge status={dress.status} />
-                  </div>
+              <div className="detail-title-row">
+                <h3>Informações do vestido</h3>
+                <StatusBadge status={dress.status} />
+              </div>
 
-                  <dl className="detail-list compact">
-                    <div>
-                      <dt>Código</dt>
-                      <dd>{dress.code}</dd>
-                    </div>
-                    <div>
-                      <dt>Tamanho</dt>
-                      <dd>{dress.size}</dd>
-                    </div>
-                    <div>
-                      <dt>Cor</dt>
-                      <dd>{dress.color}</dd>
-                    </div>
-                  </dl>
-                </>
-              )}
+              <dl className="detail-list compact">
+                <div>
+                  <dt>Código</dt>
+                  <dd>{dress.codigo}</dd>
+                </div>
+                <div>
+                  <dt>Tamanho</dt>
+                  <dd>{dress.tamanho}</dd>
+                </div>
+                <div>
+                  <dt>Cor</dt>
+                  <dd>{dress.cor}</dd>
+                </div>
+                <div className="wide">
+                  <dt>Observações</dt>
+                  <dd>{dress.observacoes || 'Sem observações cadastradas.'}</dd>
+                </div>
+              </dl>
             </section>
 
             <section className="detail-section">
               <div className="detail-title-row">
                 <h3>Aluguel atual</h3>
-                {dress.currentRental && mode !== 'editRental' ? (
+                {dress.currentRental ? (
                   <div className="button-row">
                     <button
                       className="button button-secondary"
                       type="button"
-                      onClick={() => setMode('editRental')}
+                      onClick={() => onEditRental(dress, dress.currentRental)}
                     >
                       Editar aluguel
                     </button>
@@ -194,30 +114,23 @@ export default function DressDetailsModal({
                       Marcar como devolvido
                     </button>
                   </div>
-                ) : null}
+                ) : (
+                  <button
+                    className="button button-primary"
+                    type="button"
+                    onClick={() => onRegisterRental(dress)}
+                  >
+                    Registrar aluguel
+                  </button>
+                )}
               </div>
 
-              {mode === 'editRental' && dress.currentRental ? (
-                <RentalForm
-                  dress={dress}
-                  initialRental={dress.currentRental}
-                  title="Editar aluguel atual"
-                  submitLabel="Salvar aluguel"
-                  onSubmit={submitRentalEdit}
-                  onCancel={() => setMode('details')}
-                />
-              ) : dress.currentRental ? (
+              {dress.currentRental ? (
                 <RentalInfo rental={dress.currentRental} />
               ) : (
                 <p className="muted-text">Não existe aluguel ativo para este vestido.</p>
               )}
             </section>
-
-            {dress.status !== 'alugado' && mode === 'details' ? (
-              <section className="detail-section">
-                <RentalForm dress={dress} onSubmit={onRegisterRental} />
-              </section>
-            ) : null}
 
             <section className="detail-section">
               <h3>Histórico de aluguéis</h3>
@@ -227,8 +140,8 @@ export default function DressDetailsModal({
                   {dress.rentalHistory.map((rental) => (
                     <article className="history-card" key={rental.id}>
                       <div className="history-card-header">
-                        <strong>{rental.customerName}</strong>
-                        <span>Devolvido em {formatDate(rental.returnedAt)}</span>
+                        <strong>{rental.clienteNome}</strong>
+                        <span>Devolvido em {formatDate(rental.dataDevolucaoReal)}</span>
                       </div>
                       <RentalInfo rental={rental} />
                     </article>

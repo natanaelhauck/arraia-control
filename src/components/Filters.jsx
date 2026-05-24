@@ -14,7 +14,7 @@ export default function Filters({ filters, onChange, onReset }) {
           name="query"
           value={filters.query}
           onChange={updateField}
-          placeholder="Digite código, cor ou tamanho"
+          placeholder="Digite código, cor, tamanho ou observação"
           autoComplete="off"
         />
       </label>
@@ -31,7 +31,7 @@ export default function Filters({ filters, onChange, onReset }) {
 
       {hasActiveFilters ? (
         <button className="button button-secondary" type="button" onClick={onReset}>
-          Limpar
+          Limpar filtros
         </button>
       ) : null}
     </section>

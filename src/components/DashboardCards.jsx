@@ -5,7 +5,7 @@ const counterConfig = [
   { label: 'Reservados', key: 'reservado' },
 ]
 
-export default function Dashboard({ dresses }) {
+export default function DashboardCards({ dresses }) {
   const counters = dresses.reduce(
     (accumulator, dress) => {
       accumulator.total += 1

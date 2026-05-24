@@ -11,7 +11,7 @@ export default function DressCard({ dress, onDetails }) {
         <div className="dress-card-title">
           <div>
             <span className="code-label">Código</span>
-            <h3>{dress.code}</h3>
+            <h3>{dress.codigo}</h3>
           </div>
           <StatusBadge status={dress.status} />
         </div>
@@ -19,20 +19,24 @@ export default function DressCard({ dress, onDetails }) {
         <dl className="dress-meta">
           <div>
             <dt>Tamanho</dt>
-            <dd>{dress.size}</dd>
+            <dd title={dress.tamanho}>{dress.tamanho}</dd>
           </div>
           <div>
             <dt>Cor</dt>
-            <dd>{dress.color}</dd>
+            <dd title={dress.cor}>{dress.cor}</dd>
           </div>
         </dl>
 
         {dress.currentRental ? (
           <p className="card-note">
-            Cliente: {dress.currentRental.customerName} - devolução{' '}
-            {formatDate(dress.currentRental.expectedReturnDate)}
+            Cliente: {dress.currentRental.clienteNome} - devolução{' '}
+            {formatDate(dress.currentRental.dataDevolucaoPrevista)}
           </p>
-        ) : null}
+        ) : (
+          <p className="card-note card-note-muted">
+            {dress.observacoes || 'Sem observações cadastradas.'}
+          </p>
+        )}
 
         <button className="button button-primary" type="button" onClick={onDetails}>
           Ver detalhes

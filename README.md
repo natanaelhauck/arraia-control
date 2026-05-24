@@ -1,30 +1,56 @@
 # Arraiá Control
 
-Sistema interno para gestão inicial de aluguel de vestidos de quadrilha.
+Sistema interno para gestão de aluguel de vestidos de quadrilha. A versão atual é uma base funcional para operar o acervo localmente e preparar a evolução para Supabase.
 
-## Stack
+## Objetivo
 
-- React + Vite
-- JavaScript
-- CSS puro
-- Persistência local com `localStorage`
-- Sem backend nesta primeira versão
+Centralizar o controle de vestidos, reservas, aluguéis e devoluções em uma interface simples para pessoas não técnicas, com dados organizados em um formato compatível com banco.
 
-## Funcionalidades
+## Funcionalidades atuais
 
 - Dashboard com total de vestidos, disponíveis, alugados e reservados
-- Lista de vestidos em cards
-- Busca por código, cor ou tamanho
+- Listagem de vestidos em cards responsivos
+- Busca por código, cor, tamanho ou observações
 - Filtro por status
-- Cadastro de novos vestidos
+- Cadastro de vestido em modal
+- Upload de foto JPG, JPEG, PNG ou WEBP com preview e limite inicial de 3MB
 - Edição e exclusão de vestidos com confirmação
-- Modal de detalhes com foto, dados do vestido, aluguel atual e histórico
+- Modal de detalhes com foto, informações do vestido, aluguel atual e histórico
 - Registro de aluguel com dados da cliente, datas, valor, sinal e observações
-- Edição do aluguel atual para corrigir dados preenchidos errado
-- Marcação de devolução com confirmação, movendo o aluguel atual para o histórico
-- Dados iniciais de exemplo
+- Edição do aluguel atual
+- Marcação de devolução com confirmação
+- Mensagens amigáveis de erro e sucesso
 
-## Como rodar
+## Persistência
+
+Esta versão usa `localStorage` para desenvolvimento. O acesso fica concentrado em:
+
+```text
+src/services/storageService.js
+```
+
+As fotos são salvas temporariamente como base64 em `fotoBase64Dev`. Essa abordagem é apenas para desenvolvimento local.
+
+## Próxima etapa
+
+A próxima etapa planejada é substituir o armazenamento local por:
+
+- Supabase Database para vestidos e aluguéis
+- Supabase Storage para fotos dos vestidos
+
+O modelo atual já separa os dados principais:
+
+```text
+vestido:
+  id, codigo, tamanho, cor, status, observacoes, fotoUrl, fotoBase64Dev, createdAt, updatedAt
+
+aluguel:
+  id, vestidoId, clienteNome, clienteTelefone, clienteEndereco, dataFesta,
+  dataRetirada, dataDevolucaoPrevista, dataDevolucaoReal, valor, sinalPago,
+  observacoes, status, createdAt, updatedAt
+```
+
+## Como rodar localmente
 
 Instale as dependências:
 
@@ -48,10 +74,9 @@ npm run build
 
 ```text
 src/
-  components/   Componentes reutilizáveis da interface
+  components/   Componentes da interface
   data/         Dados iniciais de exemplo
+  services/     Persistência local e preparação para Supabase
   styles/       CSS separado por base, layout, componentes e formulários
-  utils/        Persistência e formatadores
+  utils/        Formatadores
 ```
-
-Os dados ficam no navegador, na chave `arraia-control:dresses` do `localStorage`.

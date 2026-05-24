@@ -16,5 +16,11 @@ export function formatDate(dateValue) {
     return '-'
   }
 
-  return new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' }).format(new Date(dateValue))
+  const date = new Date(dateValue)
+
+  if (Number.isNaN(date.getTime())) {
+    return '-'
+  }
+
+  return new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' }).format(date)
 }
