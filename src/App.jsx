@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Header from './components/Header.jsx'
 import DashboardCards from './components/DashboardCards.jsx'
 import DressCard from './components/DressCard.jsx'
@@ -7,14 +7,16 @@ import DressFormModal from './components/DressFormModal.jsx'
 import Filters from './components/Filters.jsx'
 import RentalFormModal from './components/RentalFormModal.jsx'
 import {
-  createAluguel,
-  createVestido,
-  deleteVestido,
-  fetchVestidos,
-  markAluguelReturned,
-  updateAluguel,
-  updateVestido,
-} from './services/storageService.js'
+  createDress,
+  deleteDress,
+  fetchDresses,
+  updateDress,
+} from './services/dressService.js'
+import {
+  createRental,
+  markRentalReturned,
+  updateRental,
+} from './services/rentalService.js'
 
 const emptyFilters = {
   query: '',
@@ -26,10 +28,12 @@ function normalizeSearch(value) {
 }
 
 export default function App() {
-  const [dresses, setDresses] = useState(() => fetchVestidos())
+  const [dresses, setDresses] = useState([])
   const [filters, setFilters] = useState(emptyFilters)
   const [selectedDressId, setSelectedDressId] = useState(null)
   const [notice, setNotice] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   const [dressFormState, setDressFormState] = useState({ open: false, dress: null })
   const [rentalFormState, setRentalFormState] = useState({
     open: false,
@@ -37,16 +41,37 @@ export default function App() {
     rental: null,
   })
 
-  function refreshDresses() {
-    const nextDresses = fetchVestidos()
-    setDresses(nextDresses)
-    return nextDresses
+  async function loadDresses() {
+    setIsLoading(true)
+
+    try {
+      await refreshDresses()
+    } catch (error) {
+      setDresses([])
+      setNotice({
+        type: 'error',
+        message: error.message || 'Não foi possível carregar os dados do Supabase.',
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  function runAction(action, successMessage) {
+  async function refreshDresses() {
+    const nextDresses = await fetchDresses()
+    setDresses(nextDresses)
+  }
+
+  useEffect(() => {
+    loadDresses()
+  }, [])
+
+  async function runAction(action, successMessage) {
+    setIsSaving(true)
+
     try {
-      action()
-      refreshDresses()
+      await action()
+      await refreshDresses()
       setNotice({ type: 'success', message: successMessage })
       return true
     } catch (error) {
@@ -55,6 +80,8 @@ export default function App() {
         message: error.message || 'Não foi possível concluir a ação.',
       })
       return false
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -66,15 +93,15 @@ export default function App() {
     setRentalFormState({ open: false, dress: null, rental: null })
   }
 
-  function handleSaveDress(dressData) {
+  async function handleSaveDress(dressData) {
     const isEditing = Boolean(dressFormState.dress)
-    const didSave = runAction(
+    const didSave = await runAction(
       () => {
         if (isEditing) {
-          updateVestido(dressFormState.dress.id, dressData)
-        } else {
-          createVestido(dressData)
+          return updateDress(dressFormState.dress.id, dressData)
         }
+
+        return createDress(dressData)
       },
       isEditing ? 'Vestido atualizado com sucesso.' : 'Vestido cadastrado com sucesso.',
     )
@@ -86,9 +113,9 @@ export default function App() {
     return didSave
   }
 
-  function handleDeleteDress(dress) {
-    const didDelete = runAction(
-      () => deleteVestido(dress.id),
+  async function handleDeleteDress(dress) {
+    const didDelete = await runAction(
+      () => deleteDress(dress.id),
       `Vestido ${dress.codigo} excluído com sucesso.`,
     )
 
@@ -97,15 +124,18 @@ export default function App() {
     }
   }
 
-  function handleSaveRental(rentalData) {
+  async function handleSaveRental(rentalData) {
     const isEditing = Boolean(rentalFormState.rental)
-    const didSave = runAction(
+    const didSave = await runAction(
       () => {
         if (isEditing) {
-          updateAluguel(rentalFormState.rental.id, rentalData)
-        } else {
-          createAluguel(rentalFormState.dress.id, rentalData)
+          return updateRental(rentalFormState.rental.id, {
+            ...rentalData,
+            vestidoId: rentalFormState.rental.vestidoId,
+          })
         }
+
+        return createRental(rentalFormState.dress.id, rentalData)
       },
       isEditing ? 'Aluguel atualizado com sucesso.' : 'Aluguel registrado com sucesso.',
     )
@@ -117,9 +147,9 @@ export default function App() {
     return didSave
   }
 
-  function handleMarkReturned(rental) {
-    runAction(
-      () => markAluguelReturned(rental.id),
+  async function handleMarkReturned(rental) {
+    return runAction(
+      () => markRentalReturned(rental),
       'Vestido marcado como devolvido e aluguel movido para o histórico.',
     )
   }
@@ -152,7 +182,10 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <Header onCreateDress={() => setDressFormState({ open: true, dress: null })} />
+      <Header
+        onCreateDress={() => setDressFormState({ open: true, dress: null })}
+        disabled={isSaving}
+      />
 
       <main className="app-main">
         {notice ? (
@@ -177,11 +210,16 @@ export default function App() {
                 <h2 id="dress-list-title">Vestidos cadastrados</h2>
               </div>
               <span className="result-count">
-                {filteredDresses.length} de {dresses.length}
+                {isLoading ? 'Carregando...' : `${filteredDresses.length} de ${dresses.length}`}
               </span>
             </div>
 
-            {filteredDresses.length > 0 ? (
+            {isLoading ? (
+              <div className="empty-state">
+                <h3>Carregando acervo</h3>
+                <p>Buscando vestidos e aluguéis no Supabase.</p>
+              </div>
+            ) : filteredDresses.length > 0 ? (
               <div className="dress-grid">
                 {filteredDresses.map((dress) => (
                   <DressCard
@@ -225,6 +263,7 @@ export default function App() {
         open={dressFormState.open}
         dresses={dresses}
         initialDress={dressFormState.dress}
+        isSaving={isSaving}
         onClose={closeDressForm}
         onSubmit={handleSaveDress}
       />
@@ -245,6 +284,7 @@ export default function App() {
         open={rentalFormState.open}
         dress={rentalFormState.dress}
         initialRental={rentalFormState.rental}
+        isSaving={isSaving}
         onClose={closeRentalForm}
         onSubmit={handleSaveRental}
       />

@@ -18,7 +18,7 @@ export default function DressDetailsModal({
 
   function confirmReturn() {
     const didConfirm = window.confirm(
-      `Confirmar devolução do vestido ${dress.codigo}? O aluguel atual será movido para o histórico.`,
+      `Confirmar devolução do vestido ${dress.codigo}?\n\nO aluguel atual será finalizado e movido para o histórico.`,
     )
 
     if (didConfirm && dress.currentRental) {
@@ -28,10 +28,10 @@ export default function DressDetailsModal({
 
   function confirmDelete() {
     const warning = dress.currentRental
-      ? 'Este vestido está alugado. A exclusão removerá também o aluguel atual e o histórico.'
-      : 'Esta ação removerá o vestido e o histórico de aluguéis.'
+      ? 'Este vestido está alugado. A exclusão removerá também o aluguel atual e todo o histórico.'
+      : 'Esta ação removerá o vestido e todo o histórico de aluguéis.'
 
-    if (window.confirm(`Excluir o vestido ${dress.codigo}?\n\n${warning}`)) {
+    if (window.confirm(`Excluir definitivamente o vestido ${dress.codigo}?\n\n${warning}`)) {
       onDeleteDress(dress)
     }
   }

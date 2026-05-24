@@ -1,13 +1,22 @@
 .modal-form-fields,
 .photo-upload-panel,
-.rental-form {
+.form-section {
   display: grid;
   gap: 0.9rem;
 }
 
-.form-grid-two,
-.rental-form {
+.form-section {
+  align-content: start;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.form-grid-two {
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
 }
 
 label {
@@ -31,10 +40,6 @@ textarea {
   outline: none;
 }
 
-input[type="file"] {
-  padding: 0.55rem;
-}
-
 textarea {
   min-height: 104px;
   resize: vertical;
@@ -47,11 +52,50 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(184, 50, 50, 0.14);
 }
 
-.file-input-label {
-  padding: 0.85rem;
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.upload-dropzone {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  min-height: 128px;
+  padding: 1rem;
   border: 1px dashed var(--border);
   border-radius: 8px;
   background: var(--surface-soft);
+  color: var(--text);
+  text-align: center;
+}
+
+.upload-dropzone small {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.upload-dropzone.is-drag-active,
+.upload-dropzone:hover {
+  border-color: var(--primary);
+  background: #fff7f7;
+}
+
+.upload-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--primary-strong);
+  font-size: 1.3rem;
+  font-weight: 900;
 }
 
 .form-error {
@@ -80,8 +124,7 @@ textarea:focus {
 }
 
 @media (max-width: 900px) {
-  .form-grid-two,
-  .rental-form {
+  .form-grid-two {
     grid-template-columns: 1fr;
   }
 }

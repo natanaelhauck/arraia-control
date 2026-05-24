@@ -36,14 +36,34 @@
 
 .metric-card {
   display: grid;
-  gap: 0.5rem;
-  min-height: 104px;
+  gap: 0.7rem;
+  min-height: 108px;
   padding: 1rem;
 }
 
-.metric-card span {
+.metric-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.metric-card-header span {
   color: var(--muted);
   font-weight: 750;
+}
+
+.metric-card-header i {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--surface-soft);
+  color: var(--primary-strong);
+  font-size: 0.82rem;
+  font-style: normal;
+  font-weight: 900;
 }
 
 .metric-card strong {
@@ -102,7 +122,8 @@
   place-items: center;
   overflow: hidden;
   background:
-    linear-gradient(135deg, rgba(184, 50, 50, 0.1), transparent 36%),
+    linear-gradient(135deg, rgba(184, 50, 50, 0.12), transparent 38%),
+    radial-gradient(circle at 80% 18%, rgba(35, 87, 137, 0.12), transparent 28%),
     repeating-linear-gradient(45deg, #f6f8fb 0 10px, #eef2f6 10px 20px);
   color: var(--primary-strong);
 }
@@ -124,18 +145,19 @@
 }
 
 .photo-upload-panel .dress-image-large {
-  min-height: 360px;
+  min-height: 340px;
 }
 
 .dress-placeholder span {
   display: grid;
   place-items: center;
-  width: 6rem;
+  width: 6.25rem;
   aspect-ratio: 1;
-  background: rgba(255, 255, 255, 0.88);
-  border: 2px dashed rgba(184, 50, 50, 0.35);
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(184, 50, 50, 0.22);
   border-radius: 50%;
-  font-size: 1.6rem;
+  box-shadow: 0 12px 30px rgba(25, 36, 50, 0.08);
+  font-size: 1.55rem;
   font-weight: 900;
 }
 

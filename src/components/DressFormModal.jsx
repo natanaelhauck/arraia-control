@@ -1,9 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import DressImage from './DressImage.jsx'
-import {
-  readPhotoAsBase64,
-  validateDressPhoto,
-} from '../services/photoService.js'
+import { validateDressPhoto } from '../services/imageService.js'
 
 const emptyForm = {
   codigo: '',
@@ -12,7 +9,7 @@ const emptyForm = {
   status: 'disponivel',
   observacoes: '',
   fotoUrl: '',
-  fotoBase64Dev: '',
+  fotoArquivo: null,
 }
 
 function getInitialForm(dress) {
@@ -27,32 +24,53 @@ function getInitialForm(dress) {
     status: dress.status || 'disponivel',
     observacoes: dress.observacoes || '',
     fotoUrl: dress.fotoUrl || '',
-    fotoBase64Dev: dress.fotoBase64Dev || '',
+    fotoArquivo: null,
   }
 }
 
-export default function DressFormModal({ open, dresses, initialDress, onClose, onSubmit }) {
+export default function DressFormModal({
+  open,
+  dresses,
+  initialDress,
+  isSaving = false,
+  onClose,
+  onSubmit,
+}) {
+  const fileInputRef = useRef(null)
   const [formData, setFormData] = useState(() => getInitialForm(initialDress))
   const [error, setError] = useState('')
-  const [isReadingPhoto, setIsReadingPhoto] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState('')
+  const [isDragActive, setIsDragActive] = useState(false)
   const isEditing = Boolean(initialDress)
   const isRented = initialDress?.status === 'alugado'
 
   useEffect(() => {
-    if (open) {
-      setFormData(getInitialForm(initialDress))
-      setError('')
-      setIsReadingPhoto(false)
+    if (!open) {
+      return undefined
     }
+
+    setFormData(getInitialForm(initialDress))
+    setError('')
+    setPreviewUrl('')
+    setIsDragActive(false)
+
+    return undefined
   }, [initialDress, open])
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl)
+      }
+    }
+  }, [previewUrl])
 
   const previewDress = useMemo(
     () => ({
       codigo: formData.codigo || initialDress?.codigo || 'Novo',
-      fotoUrl: formData.fotoUrl,
-      fotoBase64Dev: formData.fotoBase64Dev,
+      fotoUrl: previewUrl || formData.fotoUrl,
     }),
-    [formData, initialDress],
+    [formData, initialDress, previewUrl],
   )
 
   if (!open) {
@@ -64,13 +82,11 @@ export default function DressFormModal({ open, dresses, initialDress, onClose, o
     setFormData((current) => ({ ...current, [name]: value }))
   }
 
-  async function handlePhotoChange(event) {
-    const file = event.target.files?.[0]
+  function setPhotoFile(file) {
     const validation = validateDressPhoto(file)
 
     if (!validation.valid) {
       setError(validation.message)
-      event.target.value = ''
       return
     }
 
@@ -78,27 +94,43 @@ export default function DressFormModal({ open, dresses, initialDress, onClose, o
       return
     }
 
-    try {
-      setIsReadingPhoto(true)
-      const base64Photo = await readPhotoAsBase64(file)
-      setFormData((current) => ({
-        ...current,
-        fotoBase64Dev: base64Photo,
-        fotoUrl: '',
-      }))
-      setError('')
-    } catch (photoError) {
-      setError(photoError.message)
-    } finally {
-      setIsReadingPhoto(false)
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl)
     }
+
+    setPreviewUrl(URL.createObjectURL(file))
+    setFormData((current) => ({
+      ...current,
+      fotoArquivo: file,
+      fotoUrl: current.fotoUrl,
+    }))
+    setError('')
+  }
+
+  function handlePhotoChange(event) {
+    setPhotoFile(event.target.files?.[0])
+  }
+
+  function handleDrop(event) {
+    event.preventDefault()
+    setIsDragActive(false)
+    setPhotoFile(event.dataTransfer.files?.[0])
   }
 
   function removePhoto() {
-    setFormData((current) => ({ ...current, fotoUrl: '', fotoBase64Dev: '' }))
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl)
+    }
+
+    setPreviewUrl('')
+    setFormData((current) => ({ ...current, fotoUrl: '', fotoArquivo: null }))
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
 
     const codigo = formData.codigo.trim().toUpperCase()
@@ -116,7 +148,7 @@ export default function DressFormModal({ open, dresses, initialDress, onClose, o
       return
     }
 
-    const didSave = onSubmit({
+    const didSave = await onSubmit({
       ...formData,
       codigo,
     })
@@ -142,16 +174,34 @@ export default function DressFormModal({ open, dresses, initialDress, onClose, o
         <form className="modal-form-grid" onSubmit={handleSubmit}>
           <div className="photo-upload-panel">
             <DressImage dress={previewDress} size="large" />
-            <label className="file-input-label">
-              Foto do vestido
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={handlePhotoChange}
-              />
-            </label>
-            <p className="form-hint">JPG, JPEG, PNG ou WEBP. Tamanho máximo: 3MB.</p>
-            {formData.fotoBase64Dev || formData.fotoUrl ? (
+            <button
+              className={`upload-dropzone ${isDragActive ? 'is-drag-active' : ''}`}
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(event) => {
+                event.preventDefault()
+                setIsDragActive(true)
+              }}
+              onDragLeave={() => setIsDragActive(false)}
+              onDrop={handleDrop}
+            >
+              <span className="upload-icon" aria-hidden="true">
+                ↑
+              </span>
+              <strong>Clique para selecionar ou arraste uma foto</strong>
+              <small>JPG, PNG ou WEBP até 3MB</small>
+            </button>
+            <input
+              ref={fileInputRef}
+              className="visually-hidden"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handlePhotoChange}
+            />
+            {formData.fotoArquivo ? (
+              <p className="form-hint">Arquivo selecionado: {formData.fotoArquivo.name}</p>
+            ) : null}
+            {previewUrl || formData.fotoUrl ? (
               <button className="button button-secondary" type="button" onClick={removePhoto}>
                 Remover foto
               </button>
@@ -227,8 +277,8 @@ export default function DressFormModal({ open, dresses, initialDress, onClose, o
               <button className="button button-secondary" type="button" onClick={onClose}>
                 Cancelar
               </button>
-              <button className="button button-primary" type="submit" disabled={isReadingPhoto}>
-                {isReadingPhoto ? 'Carregando foto...' : 'Salvar vestido'}
+              <button className="button button-primary" type="submit" disabled={isSaving}>
+                {isSaving ? 'Salvando...' : 'Salvar vestido'}
               </button>
             </div>
           </div>

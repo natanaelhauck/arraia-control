@@ -1,8 +1,8 @@
 const counterConfig = [
-  { label: 'Total de vestidos', key: 'total' },
-  { label: 'Disponíveis', key: 'disponivel' },
-  { label: 'Alugados', key: 'alugado' },
-  { label: 'Reservados', key: 'reservado' },
+  { label: 'Total de vestidos', key: 'total', icon: 'T' },
+  { label: 'Disponíveis', key: 'disponivel', icon: 'D' },
+  { label: 'Alugados', key: 'alugado', icon: 'A' },
+  { label: 'Reservados', key: 'reservado', icon: 'R' },
 ]
 
 export default function DashboardCards({ dresses }) {
@@ -19,7 +19,10 @@ export default function DashboardCards({ dresses }) {
     <section className="dashboard" aria-label="Resumo dos vestidos">
       {counterConfig.map((counter) => (
         <article className="metric-card" key={counter.key}>
-          <span>{counter.label}</span>
+          <div className="metric-card-header">
+            <span>{counter.label}</span>
+            <i aria-hidden="true">{counter.icon}</i>
+          </div>
           <strong>{counters[counter.key]}</strong>
         </article>
       ))}

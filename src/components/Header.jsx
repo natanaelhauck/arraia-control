@@ -1,4 +1,4 @@
-export default function Header({ onCreateDress }) {
+export default function Header({ onCreateDress, disabled = false }) {
   return (
     <header className="app-header">
       <div className="header-title">
@@ -12,6 +12,7 @@ export default function Header({ onCreateDress }) {
         className="button button-primary button-featured"
         type="button"
         onClick={onCreateDress}
+        disabled={disabled}
       >
         Cadastrar vestido
       </button>

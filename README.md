@@ -1,56 +1,33 @@
 # Arraiá Control
 
-Sistema interno para gestão de aluguel de vestidos de quadrilha. A versão atual é uma base funcional para operar o acervo localmente e preparar a evolução para Supabase.
+Sistema interno para gestão de aluguel de vestidos de quadrilha. A versão atual usa Supabase Database e Supabase Storage para operar com dados reais, mantendo uma interface simples para cadastro, aluguel, devolução e histórico.
 
-## Objetivo
+## Stack
 
-Centralizar o controle de vestidos, reservas, aluguéis e devoluções em uma interface simples para pessoas não técnicas, com dados organizados em um formato compatível com banco.
+- React + Vite
+- JavaScript
+- CSS puro
+- Supabase Database
+- Supabase Storage
+- `@supabase/supabase-js`
 
-## Funcionalidades atuais
+## Funcionalidades
 
 - Dashboard com total de vestidos, disponíveis, alugados e reservados
 - Listagem de vestidos em cards responsivos
 - Busca por código, cor, tamanho ou observações
 - Filtro por status
-- Cadastro de vestido em modal
-- Upload de foto JPG, JPEG, PNG ou WEBP com preview e limite inicial de 3MB
-- Edição e exclusão de vestidos com confirmação
+- Cadastro e edição de vestidos em modal
+- Upload de foto para o bucket `dress-photos`
+- Validação de imagem JPG, JPEG, PNG ou WEBP até 3MB
+- Exclusão de vestido com confirmação
 - Modal de detalhes com foto, informações do vestido, aluguel atual e histórico
-- Registro de aluguel com dados da cliente, datas, valor, sinal e observações
-- Edição do aluguel atual
+- Registro e edição de aluguel
 - Marcação de devolução com confirmação
-- Mensagens amigáveis de erro e sucesso
+- Histórico de aluguéis vindo da tabela `rentals`
+- Mensagens amigáveis de loading, erro e sucesso
 
-## Persistência
-
-Esta versão usa `localStorage` para desenvolvimento. O acesso fica concentrado em:
-
-```text
-src/services/storageService.js
-```
-
-As fotos são salvas temporariamente como base64 em `fotoBase64Dev`. Essa abordagem é apenas para desenvolvimento local.
-
-## Próxima etapa
-
-A próxima etapa planejada é substituir o armazenamento local por:
-
-- Supabase Database para vestidos e aluguéis
-- Supabase Storage para fotos dos vestidos
-
-O modelo atual já separa os dados principais:
-
-```text
-vestido:
-  id, codigo, tamanho, cor, status, observacoes, fotoUrl, fotoBase64Dev, createdAt, updatedAt
-
-aluguel:
-  id, vestidoId, clienteNome, clienteTelefone, clienteEndereco, dataFesta,
-  dataRetirada, dataDevolucaoPrevista, dataDevolucaoReal, valor, sinalPago,
-  observacoes, status, createdAt, updatedAt
-```
-
-## Como rodar localmente
+## Como Rodar Localmente
 
 Instale as dependências:
 
@@ -58,25 +35,77 @@ Instale as dependências:
 npm install
 ```
 
-Rode o ambiente local:
+Crie um arquivo `.env` baseado em `.env.example`:
+
+```bash
+VITE_SUPABASE_URL=sua_url_do_supabase
+VITE_SUPABASE_ANON_KEY=sua_chave_anonima_do_supabase
+```
+
+Rode o projeto:
 
 ```bash
 npm run dev
 ```
 
-Gere a build de produção:
+Gere a build:
 
 ```bash
 npm run build
 ```
+
+Nunca use a service role key no frontend. Use somente a anon key.
+
+## Configurar Supabase
+
+1. Crie um projeto no Supabase.
+2. Abra o SQL Editor.
+3. Execute o arquivo [supabase/schema.sql](supabase/schema.sql).
+4. Confirme que as tabelas `dresses` e `rentals` foram criadas.
+5. Confirme que o bucket `dress-photos` existe em Storage.
+6. Copie a Project URL e a anon public key para o `.env`.
+
+O `schema.sql` também cria triggers para atualizar `updated_at` automaticamente e políticas RLS temporárias para desenvolvimento interno.
+
+## Storage
+
+O bucket usado pelo sistema é:
+
+```text
+dress-photos
+```
+
+Para esta fase, ele fica público para facilitar a exibição das fotos. As imagens são enviadas pelo navegador usando a anon key e a URL pública é salva em `dresses.photo_url`.
+
+Antes de produção, revise as policies de Storage e considere usar URLs assinadas se as fotos não puderem ser públicas.
+
+## Segurança
+
+- RLS está ativado nas tabelas.
+- As policies atuais são temporárias para uso interno em desenvolvimento sem login.
+- Antes de produção, o ideal é adicionar autenticação por usuário e senha.
+- Não exponha a service role key.
+- Mantenha somente `VITE_SUPABASE_ANON_KEY` no frontend.
+- As entradas passam por sanitização básica e validações no frontend.
+- O banco também protege status por constraints e código único por `unique`.
 
 ## Estrutura
 
 ```text
 src/
   components/   Componentes da interface
-  data/         Dados iniciais de exemplo
-  services/     Persistência local e preparação para Supabase
+  lib/          Cliente Supabase
+  services/     Serviços de vestidos, aluguéis, imagens e sanitização
   styles/       CSS separado por base, layout, componentes e formulários
   utils/        Formatadores
+supabase/
+  schema.sql    Tabelas, constraints, triggers, RLS e bucket
 ```
+
+## Próximos Passos
+
+- Autenticação por usuário e senha
+- Policies RLS baseadas em usuários autenticados
+- Deploy
+- Domínio próprio
+- Rotina de backup

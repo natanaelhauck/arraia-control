@@ -1,4 +1,4 @@
-import { getDressPhotoSource } from '../services/photoService.js'
+import { getDressPhotoSource } from '../services/imageService.js'
 
 export default function DressImage({ dress, size = 'card' }) {
   const className = `dress-image dress-image-${size}`
