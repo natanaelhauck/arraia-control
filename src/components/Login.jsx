@@ -27,7 +27,6 @@ export default function Login({ onAuthenticated }) {
     <main className="login-page">
       <section className="login-card" aria-labelledby="login-title">
         <div>
-          <p className="eyebrow">Acesso interno</p>
           <h1 id="login-title">Arraiá Control</h1>
         </div>
 

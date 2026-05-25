@@ -223,7 +223,6 @@ export default function App() {
     return (
       <main className="login-page">
         <section className="login-card">
-          <p className="eyebrow">Acesso interno</p>
           <h1>Arraiá Control</h1>
           <p className="login-summary">Verificando sessão...</p>
         </section>
