@@ -19,6 +19,7 @@ create table if not exists public.rentals (
   customer_name text not null,
   customer_phone text,
   customer_address text,
+  customer_cpf text,
   party_date date not null,
   pickup_date date,
   expected_return_date date,
@@ -31,6 +32,9 @@ create table if not exists public.rentals (
   updated_at timestamptz default now(),
   constraint rentals_status_check check (status in ('ativo', 'devolvido', 'cancelado'))
 );
+
+alter table public.rentals
+add column if not exists customer_cpf text;
 
 create index if not exists rentals_dress_id_idx on public.rentals(dress_id);
 create index if not exists rentals_status_idx on public.rentals(status);

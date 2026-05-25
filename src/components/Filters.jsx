@@ -1,5 +1,9 @@
-export default function Filters({ filters, onChange, onReset }) {
-  const hasActiveFilters = filters.status !== 'todos' || filters.query.trim() !== ''
+export default function Filters({ filters, colorOptions, sizeOptions, onChange, onReset }) {
+  const hasActiveFilters =
+    filters.status !== 'todos' ||
+    filters.color !== 'todas' ||
+    filters.size !== 'todas' ||
+    filters.query.trim() !== ''
 
   function updateField(event) {
     const { name, value } = event.target
@@ -8,7 +12,7 @@ export default function Filters({ filters, onChange, onReset }) {
 
   return (
     <section className="filters-panel" aria-label="Filtros de vestidos">
-      <label>
+      <label className="search-filter">
         Buscar vestido
         <input
           name="query"
@@ -29,9 +33,33 @@ export default function Filters({ filters, onChange, onReset }) {
         </select>
       </label>
 
+      <label>
+        Cor
+        <select name="color" value={filters.color} onChange={updateField}>
+          <option value="todas">Todas</option>
+          {colorOptions.map((color) => (
+            <option key={color} value={color}>
+              {color}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label>
+        Tamanho
+        <select name="size" value={filters.size} onChange={updateField}>
+          <option value="todas">Todas</option>
+          {sizeOptions.map((size) => (
+            <option key={size} value={size}>
+              {size}
+            </option>
+          ))}
+        </select>
+      </label>
+
       {hasActiveFilters ? (
         <button className="button button-secondary" type="button" onClick={onReset}>
-          Limpar filtros
+          Limpar
         </button>
       ) : null}
     </section>

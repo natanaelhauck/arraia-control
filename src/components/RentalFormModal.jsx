@@ -4,6 +4,7 @@ const emptyForm = {
   clienteNome: '',
   clienteTelefone: '',
   clienteEndereco: '',
+  clienteCpf: '',
   dataFesta: '',
   dataRetirada: '',
   dataDevolucaoPrevista: '',
@@ -21,6 +22,7 @@ function getInitialForm(rental) {
     clienteNome: rental.clienteNome || '',
     clienteTelefone: rental.clienteTelefone || '',
     clienteEndereco: rental.clienteEndereco || '',
+    clienteCpf: rental.clienteCpf || '',
     dataFesta: rental.dataFesta || '',
     dataRetirada: rental.dataRetirada || '',
     dataDevolucaoPrevista: rental.dataDevolucaoPrevista || '',
@@ -120,6 +122,16 @@ export default function RentalFormModal({
                 name="clienteEndereco"
                 value={formData.clienteEndereco}
                 onChange={updateField}
+              />
+            </label>
+
+            <label>
+              CPF
+              <input
+                name="clienteCpf"
+                value={formData.clienteCpf}
+                onChange={updateField}
+                placeholder="000.000.000-00"
               />
             </label>
           </div>

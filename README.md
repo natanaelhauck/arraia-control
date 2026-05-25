@@ -79,6 +79,18 @@ Para esta fase, ele fica público para facilitar a exibição das fotos. As imag
 
 Antes de produção, revise as policies de Storage e considere usar URLs assinadas se as fotos não puderem ser públicas.
 
+## Padrão recomendado para fotos dos vestidos
+
+- Tire a foto na vertical.
+- Use fundo simples.
+- Deixe o vestido centralizado.
+- Fotografe de frente.
+- Mantenha boa iluminação.
+- Evite cortar barra, manga ou cintura.
+- Evite zoom excessivo.
+- Use proporção parecida com 3:4 ou 4:5.
+- Mantenha o tamanho máximo de 3MB.
+
 ## Segurança
 
 - RLS está ativado nas tabelas.

@@ -16,6 +16,10 @@ export default function RentalInfo({ rental }) {
         <dd>{rental.clienteEndereco || '-'}</dd>
       </div>
       <div>
+        <dt>CPF</dt>
+        <dd>{rental.clienteCpf || '-'}</dd>
+      </div>
+      <div>
         <dt>Data da festa</dt>
         <dd>{formatDate(rental.dataFesta)}</dd>
       </div>

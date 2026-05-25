@@ -17,14 +17,13 @@ import {
   markRentalReturned,
   updateRental,
 } from './services/rentalService.js'
+import { filterDresses, getDressFilterOptions } from './utils/filterDresses.js'
 
 const emptyFilters = {
   query: '',
   status: 'todos',
-}
-
-function normalizeSearch(value) {
-  return value.trim().toLowerCase()
+  color: 'todas',
+  size: 'todas',
 }
 
 export default function App() {
@@ -159,20 +158,13 @@ export default function App() {
     [dresses, selectedDressId],
   )
 
-  const filteredDresses = useMemo(() => {
-    const search = normalizeSearch(filters.query)
-
-    return dresses.filter((dress) => {
-      const matchesStatus = filters.status === 'todos' || dress.status === filters.status
-      const searchableText =
-        `${dress.codigo} ${dress.cor} ${dress.tamanho} ${dress.observacoes}`.toLowerCase()
-      const matchesSearch = !search || searchableText.includes(search)
-
-      return matchesStatus && matchesSearch
-    })
-  }, [dresses, filters])
-
-  const hasActiveFilters = filters.status !== 'todos' || filters.query.trim() !== ''
+  const filteredDresses = useMemo(() => filterDresses(dresses, filters), [dresses, filters])
+  const filterOptions = useMemo(() => getDressFilterOptions(dresses), [dresses])
+  const hasActiveFilters =
+    filters.status !== 'todos' ||
+    filters.color !== 'todas' ||
+    filters.size !== 'todas' ||
+    filters.query.trim() !== ''
   const emptyStateTitle =
     dresses.length === 0 ? 'Nenhum vestido cadastrado ainda' : 'Nenhum vestido encontrado'
   const emptyStateDescription =
@@ -199,6 +191,8 @@ export default function App() {
         <section className="content-stack" aria-label="Área principal">
           <Filters
             filters={filters}
+            colorOptions={filterOptions.colors}
+            sizeOptions={filterOptions.sizes}
             onChange={setFilters}
             onReset={() => setFilters(emptyFilters)}
           />
