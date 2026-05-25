@@ -14,6 +14,7 @@ Sistema interno para gestão de aluguel de vestidos de quadrilha. A versão atua
 ## Funcionalidades
 
 - Dashboard com total de vestidos, disponíveis, alugados e reservados
+- Dashboard financeiro com receita prevista, valores recebidos, pendências e devoluções
 - Listagem de vestidos em cards responsivos
 - Busca por código, cor, tamanho ou observações
 - Filtro por status
@@ -93,6 +94,20 @@ Antes de produção, revise as policies de Storage e considere usar URLs assinad
 - Evite zoom excessivo.
 - Use proporção parecida com 3:4 ou 4:5.
 - Mantenha o tamanho máximo de 3MB.
+
+## Dashboard Financeiro
+
+O dashboard financeiro usa os registros da tabela `rentals` e aplica os filtros por período e status. O filtro de período considera a `party_date` do aluguel.
+
+Regras atuais de cálculo:
+
+- Receita total prevista: soma de `total_amount` dos aluguéis ativos e devolvidos.
+- Valor já recebido: soma de `deposit_amount`; quando o aluguel está devolvido e possui `total_amount`, o sistema considera que o valor total foi recebido.
+- Valor pendente: `total_amount - deposit_amount` somente para aluguéis ativos, sem permitir valor negativo.
+- Devoluções próximas: aluguéis ativos com `expected_return_date` nos próximos 7 dias.
+- Devoluções atrasadas: aluguéis ativos com `expected_return_date` anterior à data atual.
+
+Como ainda não existe um campo específico para pagamento final, a regra temporária considera aluguel devolvido como quitado. No futuro, o sistema pode receber controle de pagamento completo, checkout e baixa manual de parcelas.
 
 ## Segurança
 

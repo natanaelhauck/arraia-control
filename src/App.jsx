@@ -6,6 +6,7 @@ import DressCard from './components/DressCard.jsx'
 import DressDetailsModal from './components/DressDetailsModal.jsx'
 import DressFormModal from './components/DressFormModal.jsx'
 import Filters from './components/Filters.jsx'
+import FinancialDashboard from './components/FinancialDashboard.jsx'
 import RentalFormModal from './components/RentalFormModal.jsx'
 import {
   createDress,
@@ -285,6 +286,7 @@ export default function App() {
 
       <main className="app-main">
         <DashboardCards dresses={dresses} />
+        <FinancialDashboard dresses={dresses} isLoading={isLoading} />
 
         <section className="content-stack" aria-label="Área principal">
           <Filters
