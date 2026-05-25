@@ -16,12 +16,14 @@
   display: grid;
   gap: 0.34rem;
   min-width: max-content;
+  justify-items: start;
 }
 
 .header-title .eyebrow {
   margin: 0;
-  padding-left: 0;
-  font-size: 0.9rem;
+  padding-left: 0.12rem;
+  font-size: 0.95rem;
+  line-height: 1;
 }
 
 .header-summary {
@@ -39,13 +41,17 @@
   gap: 0.75rem;
 }
 
-.session-email {
-  max-width: 220px;
-  overflow: hidden;
+.session-user {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0.35rem 0.72rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-soft);
   color: var(--muted);
-  font-size: 0.84rem;
-  font-weight: 750;
-  text-overflow: ellipsis;
+  font-size: 0.83rem;
+  font-weight: 850;
   white-space: nowrap;
 }
 
@@ -125,6 +131,14 @@
   border-bottom: 1px solid var(--border);
 }
 
+.modal-header > div {
+  min-width: 0;
+}
+
+.modal-header h2 {
+  overflow-wrap: anywhere;
+}
+
 .modal-content {
   display: grid;
   grid-template-columns: 360px minmax(0, 1fr);
@@ -195,17 +209,14 @@
   }
 
   .header-actions {
-    align-items: stretch;
-    flex-direction: column;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-start;
     width: 100%;
-  }
-
-  .session-email {
-    max-width: 100%;
   }
 
   .button-featured {
-    width: 100%;
+    flex: 1 1 190px;
   }
 
   .dashboard,
@@ -224,6 +235,19 @@
     padding-inline: 0.85rem;
   }
 
+  .app-header {
+    padding: 1.15rem 0.85rem;
+  }
+
+  .header-actions .button-secondary {
+    margin-left: auto;
+  }
+
+  .button-featured {
+    flex-basis: 100%;
+    order: 2;
+  }
+
   .modal-backdrop {
     padding: 0;
   }
@@ -238,5 +262,10 @@
   .modal-form-grid,
   .rental-modal-body {
     max-height: calc(100vh - 5.75rem);
+    padding: 1rem;
+  }
+
+  .modal-header {
+    padding: 1rem;
   }
 }

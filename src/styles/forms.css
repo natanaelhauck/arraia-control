@@ -1,7 +1,8 @@
 .modal-form-fields,
 .photo-upload-panel,
 .form-section,
-.login-form {
+.login-form,
+.field-group {
   display: grid;
   gap: 0.9rem;
 }
@@ -28,6 +29,54 @@
 .login-summary {
   color: var(--muted);
   line-height: 1.5;
+}
+
+.login-form {
+  gap: 0.95rem;
+}
+
+.field-group {
+  gap: 0.35rem;
+}
+
+.password-input-wrap {
+  position: relative;
+}
+
+.password-input-wrap input {
+  padding-right: 3.1rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.4rem;
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  transform: translateY(-50%);
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+  background: var(--surface-soft);
+  color: var(--primary-strong);
+}
+
+.password-toggle svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
 }
 
 .form-section {
@@ -155,6 +204,15 @@ textarea:focus {
 }
 
 @media (max-width: 640px) {
+  .login-page {
+    align-items: center;
+    padding: 0.85rem;
+  }
+
+  .login-card {
+    padding: 1.15rem;
+  }
+
   .form-actions {
     flex-direction: column-reverse;
   }

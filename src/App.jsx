@@ -238,7 +238,6 @@ export default function App() {
   return (
     <div className="app-shell">
       <Header
-        userEmail={session.user?.email || ''}
         onCreateDress={() => setDressFormState({ open: true, dress: null })}
         onSignOut={handleSignOut}
         disabled={isSaving}

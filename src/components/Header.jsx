@@ -1,4 +1,4 @@
-export default function Header({ userEmail, onCreateDress, onSignOut, disabled = false }) {
+export default function Header({ onCreateDress, onSignOut, disabled = false }) {
   return (
     <header className="app-header">
       <div className="header-title">
@@ -9,7 +9,9 @@ export default function Header({ userEmail, onCreateDress, onSignOut, disabled =
         Gestão prática e segura de vestidos, reservas, aluguéis e devoluções.
       </p>
       <div className="header-actions">
-        <span className="session-email">{userEmail}</span>
+        <span className="session-user" aria-label="Usuária logada: Gabi">
+          Gabi
+        </span>
         <button
           className="button button-primary button-featured"
           type="button"
