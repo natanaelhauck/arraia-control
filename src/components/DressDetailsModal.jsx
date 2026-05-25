@@ -3,6 +3,12 @@ import RentalInfo from './RentalInfo.jsx'
 import StatusBadge from './StatusBadge.jsx'
 import { formatDate } from '../utils/formatters.js'
 
+const rentalStatusLabels = {
+  ativo: 'Ativo',
+  devolvido: 'Devolvido',
+  cancelado: 'Cancelado',
+}
+
 export default function DressDetailsModal({
   dress,
   onClose,
@@ -35,6 +41,12 @@ export default function DressDetailsModal({
       onDeleteDress(dress)
     }
   }
+
+  const rentalHistory = [...dress.rentalHistory].sort((first, second) => {
+    const firstDate = first.updatedAt || first.createdAt || ''
+    const secondDate = second.updatedAt || second.createdAt || ''
+    return String(secondDate).localeCompare(String(firstDate))
+  })
 
   return (
     <div className="modal-backdrop" role="presentation">
@@ -135,17 +147,23 @@ export default function DressDetailsModal({
             <section className="detail-section">
               <h3>Histórico de aluguéis</h3>
 
-              {dress.rentalHistory.length > 0 ? (
-                <div className="history-list">
-                  {dress.rentalHistory.map((rental) => (
-                    <article className="history-card" key={rental.id}>
-                      <div className="history-card-header">
-                        <strong>{rental.clienteNome}</strong>
-                        <span>Devolvido em {formatDate(rental.dataDevolucaoReal)}</span>
-                      </div>
-                      <RentalInfo rental={rental} />
-                    </article>
-                  ))}
+              {rentalHistory.length > 0 ? (
+                <div className="history-scroll">
+                  <div className="history-list">
+                    {rentalHistory.map((rental) => (
+                      <article className="history-card" key={rental.id}>
+                        <div className="history-card-header">
+                          <span
+                            className={`rental-status rental-status-${rental.status || 'cancelado'}`}
+                          >
+                            {rentalStatusLabels[rental.status] || 'Cancelado'}
+                          </span>
+                          <span>{formatDate(rental.dataDevolucaoReal || rental.updatedAt)}</span>
+                        </div>
+                        <RentalInfo rental={rental} />
+                      </article>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <p className="muted-text">

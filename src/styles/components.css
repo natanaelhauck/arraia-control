@@ -223,6 +223,29 @@
   color: var(--muted);
 }
 
+.card-note-rental {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.card-note-line {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.35rem;
+  margin: 0;
+  min-width: 0;
+}
+
+.card-note-line strong {
+  font-weight: 900;
+}
+
+.card-note-line span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .detail-list {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -366,18 +389,59 @@
   gap: 0.75rem;
 }
 
+.history-scroll {
+  max-height: 420px;
+  overflow: auto;
+  padding-right: 0.25rem;
+}
+
 .history-card {
   display: grid;
-  gap: 0.75rem;
-  padding: 1rem;
+  gap: 0.65rem;
+  padding: 0.85rem;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface-soft);
 }
 
+.history-card .detail-list {
+  gap: 0.55rem 0.75rem;
+  font-size: 0.94rem;
+}
+
 .history-card-header span,
 .muted-text {
   color: var(--muted);
+}
+
+.history-card-header {
+  align-items: center;
+}
+
+.rental-status {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  min-height: 26px;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.rental-status-ativo {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.rental-status-devolvido {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.rental-status-cancelado {
+  background: var(--yellow-soft);
+  color: var(--yellow);
 }
 
 .empty-state {

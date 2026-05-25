@@ -28,10 +28,16 @@ export default function DressCard({ dress, onDetails }) {
         </dl>
 
         {dress.currentRental ? (
-          <p className="card-note">
-            Cliente: {dress.currentRental.clienteNome} - devolução{' '}
-            {formatDate(dress.currentRental.dataDevolucaoPrevista)}
-          </p>
+          <div className="card-note card-note-rental">
+            <p className="card-note-line">
+              <strong>Cliente:</strong>
+              <span title={dress.currentRental.clienteNome}>{dress.currentRental.clienteNome}</span>
+            </p>
+            <p className="card-note-line">
+              <strong>Devolução:</strong>
+              <span>{formatDate(dress.currentRental.dataDevolucaoPrevista)}</span>
+            </p>
+          </div>
         ) : (
           <p className="card-note card-note-muted">
             {dress.observacoes || 'Sem observações cadastradas.'}
