@@ -46,7 +46,32 @@ function addDays(date, days) {
   return nextDate
 }
 
-function getPeriodRange(period, today = new Date()) {
+export function getCurrentMonthValue(today = new Date()) {
+  const currentDate = startOfDay(today)
+  const year = currentDate.getFullYear()
+  const month = String(currentDate.getMonth() + 1).padStart(2, '0')
+  return `${year}-${month}`
+}
+
+function parseMonthValue(monthValue, today = new Date()) {
+  const safeMonthValue = monthValue || getCurrentMonthValue(today)
+  const match = String(safeMonthValue).match(/^(\d{4})-(\d{2})$/)
+
+  if (!match) {
+    return parseMonthValue(getCurrentMonthValue(today), today)
+  }
+
+  const year = Number(match[1])
+  const month = Number(match[2])
+
+  if (month < 1 || month > 12) {
+    return parseMonthValue(getCurrentMonthValue(today), today)
+  }
+
+  return { year, monthIndex: month - 1 }
+}
+
+function getPeriodRange(period, monthValue, today = new Date()) {
   const currentDate = startOfDay(today)
   const currentYear = currentDate.getFullYear()
   const currentMonth = currentDate.getMonth()
@@ -69,6 +94,15 @@ function getPeriodRange(period, today = new Date()) {
     return {
       start: addDays(currentDate, -30),
       end: currentDate,
+    }
+  }
+
+  if (period === 'mes-especifico') {
+    const selectedMonth = parseMonthValue(monthValue, today)
+
+    return {
+      start: new Date(selectedMonth.year, selectedMonth.monthIndex, 1),
+      end: new Date(selectedMonth.year, selectedMonth.monthIndex + 1, 0),
     }
   }
 
@@ -104,10 +138,10 @@ export function getFinancialRentals(dresses) {
 }
 
 export function filterFinancialRentals(rentals, filters) {
-  const range = getPeriodRange(filters.period)
+  const range = getPeriodRange(filters.period, filters.month)
 
   return rentals.filter((rental) => {
-    const rentalDate = parseDate(rental.dataFesta || rental.createdAt)
+    const rentalDate = parseDate(rental.partyDate || rental.dataFesta || rental.createdAt)
     const matchesPeriod = isInsideRange(rentalDate, range)
     const matchesStatus = filters.status === 'todos' || rental.status === filters.status
 

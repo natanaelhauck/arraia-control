@@ -4,6 +4,7 @@ import {
   filterFinancialRentals,
   formatCurrencyBRL,
   formatDateBR,
+  getCurrentMonthValue,
   getFinancialRentals,
   getOverdueReturns,
   getRentalPendingAmount,
@@ -14,6 +15,7 @@ import {
 const initialFilters = {
   period: 'este-mes',
   status: 'todos',
+  month: getCurrentMonthValue(),
 }
 
 function FinancialMetricCard({ label, value, tone = 'default' }) {
@@ -59,7 +61,7 @@ function FinancialRentalRow({ rental }) {
       </div>
       <div>
         <dt>Festa</dt>
-        <dd>{formatDateBR(rental.dataFesta)}</dd>
+        <dd>{formatDateBR(rental.partyDate || rental.dataFesta)}</dd>
       </div>
       <div>
         <dt>Devolução</dt>
@@ -91,6 +93,7 @@ function FinancialRentalRow({ rental }) {
 
 export default function FinancialDashboard({ dresses, isLoading = false, showHeading = true }) {
   const [filters, setFilters] = useState(initialFilters)
+  const currentMonthValue = useMemo(() => getCurrentMonthValue(), [])
   const rentals = useMemo(() => getFinancialRentals(dresses), [dresses])
   const filteredRentals = useMemo(
     () => filterFinancialRentals(rentals, filters),
@@ -125,9 +128,21 @@ export default function FinancialDashboard({ dresses, isLoading = false, showHea
               <option value="este-mes">Este mês</option>
               <option value="proximo-mes">Próximo mês</option>
               <option value="ultimos-30-dias">Últimos 30 dias</option>
+              <option value="mes-especifico">Mês específico</option>
               <option value="todos">Todos</option>
             </select>
           </label>
+          {filters.period === 'mes-especifico' ? (
+            <label>
+              Mês
+              <input
+                type="month"
+                name="month"
+                value={filters.month || currentMonthValue}
+                onChange={updateFilter}
+              />
+            </label>
+          ) : null}
           <label>
             Status
             <select name="status" value={filters.status} onChange={updateFilter}>
