@@ -19,9 +19,24 @@
 }
 
 .notice {
-  margin-bottom: 1rem;
-  padding: 0.85rem 1rem;
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 50;
+  width: min(420px, calc(100vw - 2rem));
+  padding: 0.9rem 1rem;
   font-weight: 800;
+  line-height: 1.4;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 400ms ease,
+    transform 400ms ease;
+}
+
+.notice-exit {
+  opacity: 0;
+  transform: translateY(-0.55rem);
 }
 
 .notice-success {
@@ -32,6 +47,11 @@
 .notice-error {
   background: var(--danger-soft);
   color: var(--primary-strong);
+}
+
+.notice-warning {
+  background: var(--yellow-soft);
+  color: var(--yellow);
 }
 
 .metric-card {
@@ -396,5 +416,14 @@
   .dress-image-large,
   .photo-upload-panel .dress-image-large {
     min-height: 320px;
+  }
+}
+
+@media (max-width: 640px) {
+  .notice {
+    top: 0.75rem;
+    right: 0.75rem;
+    left: 0.75rem;
+    width: auto;
   }
 }

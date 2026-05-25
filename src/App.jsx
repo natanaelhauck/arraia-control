@@ -28,6 +28,9 @@ const emptyFilters = {
   size: 'todos',
 }
 
+const NOTICE_VISIBLE_MS = 4000
+const NOTICE_FADE_MS = 400
+
 export default function App() {
   const [session, setSession] = useState(null)
   const [isAuthLoading, setIsAuthLoading] = useState(true)
@@ -44,6 +47,15 @@ export default function App() {
     rental: null,
   })
 
+  function showNotice(type, message) {
+    setNotice({
+      id: `${Date.now()}-${Math.random()}`,
+      type,
+      message,
+      isLeaving: false,
+    })
+  }
+
   async function loadDresses() {
     setIsLoading(true)
 
@@ -51,10 +63,7 @@ export default function App() {
       await refreshDresses()
     } catch (error) {
       setDresses([])
-      setNotice({
-        type: 'error',
-        message: error.message || 'Não foi possível carregar os dados do Supabase.',
-      })
+      showNotice('error', error.message || 'Não foi possível carregar os dados do Supabase.')
     } finally {
       setIsLoading(false)
     }
@@ -74,10 +83,7 @@ export default function App() {
         setSession(currentSession)
         unsubscribe = onAuthSessionChange(setSession)
       } catch (error) {
-        setNotice({
-          type: 'error',
-          message: error.message || 'Não foi possível verificar o acesso interno.',
-        })
+        showNotice('error', error.message || 'Não foi possível verificar o acesso interno.')
       } finally {
         setIsAuthLoading(false)
       }
@@ -99,19 +105,47 @@ export default function App() {
     setIsLoading(false)
   }, [session])
 
+  useEffect(() => {
+    if (!notice) {
+      return undefined
+    }
+
+    const fadeTimer = window.setTimeout(() => {
+      setNotice((currentNotice) => {
+        if (!currentNotice || currentNotice.id !== notice.id) {
+          return currentNotice
+        }
+
+        return { ...currentNotice, isLeaving: true }
+      })
+    }, NOTICE_VISIBLE_MS)
+
+    const removeTimer = window.setTimeout(() => {
+      setNotice((currentNotice) => {
+        if (!currentNotice || currentNotice.id !== notice.id) {
+          return currentNotice
+        }
+
+        return null
+      })
+    }, NOTICE_VISIBLE_MS + NOTICE_FADE_MS)
+
+    return () => {
+      window.clearTimeout(fadeTimer)
+      window.clearTimeout(removeTimer)
+    }
+  }, [notice?.id])
+
   async function runAction(action, successMessage) {
     setIsSaving(true)
 
     try {
       await action()
       await refreshDresses()
-      setNotice({ type: 'success', message: successMessage })
+      showNotice('success', successMessage)
       return true
     } catch (error) {
-      setNotice({
-        type: 'error',
-        message: error.message || 'Não foi possível concluir a ação.',
-      })
+      showNotice('error', error.message || 'Não foi possível concluir a ação.')
       return false
     } finally {
       setIsSaving(false)
@@ -193,10 +227,7 @@ export default function App() {
       await signOut()
       setSession(null)
     } catch (error) {
-      setNotice({
-        type: 'error',
-        message: error.message || 'Não foi possível sair.',
-      })
+      showNotice('error', error.message || 'Não foi possível sair.')
     }
   }
 
@@ -242,13 +273,17 @@ export default function App() {
         disabled={isSaving}
       />
 
-      <main className="app-main">
-        {notice ? (
-          <div className={`notice notice-${notice.type}`} role="status">
-            {notice.message}
-          </div>
-        ) : null}
+      {notice ? (
+        <div
+          className={`notice notice-${notice.type} ${notice.isLeaving ? 'notice-exit' : ''}`}
+          role="status"
+          aria-live="polite"
+        >
+          {notice.message}
+        </div>
+      ) : null}
 
+      <main className="app-main">
         <DashboardCards dresses={dresses} />
 
         <section className="content-stack" aria-label="Área principal">
