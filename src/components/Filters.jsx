@@ -2,7 +2,7 @@ export default function Filters({ filters, colorOptions, sizeOptions, onChange, 
   const hasActiveFilters =
     filters.status !== 'todos' ||
     filters.color !== 'todas' ||
-    filters.size !== 'todas' ||
+    filters.size !== 'todos' ||
     filters.query.trim() !== ''
 
   function updateField(event) {
@@ -48,7 +48,7 @@ export default function Filters({ filters, colorOptions, sizeOptions, onChange, 
       <label>
         Tamanho
         <select name="size" value={filters.size} onChange={updateField}>
-          <option value="todas">Todas</option>
+          <option value="todos">Todos</option>
           {sizeOptions.map((size) => (
             <option key={size} value={size}>
               {size}

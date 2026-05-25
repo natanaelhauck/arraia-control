@@ -17,6 +17,8 @@ Sistema interno para gestão de aluguel de vestidos de quadrilha. A versão atua
 - Listagem de vestidos em cards responsivos
 - Busca por código, cor, tamanho ou observações
 - Filtro por status
+- Filtros por cor genérica e tamanho
+- Login com Supabase Auth por e-mail e senha
 - Cadastro e edição de vestidos em modal
 - Upload de foto para o bucket `dress-photos`
 - Validação de imagem JPG, JPEG, PNG ou WEBP até 3MB
@@ -64,8 +66,9 @@ Nunca use a service role key no frontend. Use somente a anon key.
 4. Confirme que as tabelas `dresses` e `rentals` foram criadas.
 5. Confirme que o bucket `dress-photos` existe em Storage.
 6. Copie a Project URL e a anon public key para o `.env`.
+7. Em Authentication > Users, crie os usuários internos com e-mail e senha.
 
-O `schema.sql` também cria triggers para atualizar `updated_at` automaticamente e políticas RLS temporárias para desenvolvimento interno.
+O `schema.sql` também cria triggers para atualizar `updated_at` automaticamente e políticas RLS para usuários autenticados.
 
 ## Storage
 
@@ -94,8 +97,9 @@ Antes de produção, revise as policies de Storage e considere usar URLs assinad
 ## Segurança
 
 - RLS está ativado nas tabelas.
-- As policies atuais são temporárias para uso interno em desenvolvimento sem login.
-- Antes de produção, o ideal é adicionar autenticação por usuário e senha.
+- A tela de login usa Supabase Auth com e-mail e senha.
+- O dashboard só é exibido quando existe sessão ativa.
+- Crie os usuários internos em Supabase Authentication > Users.
 - Não exponha a service role key.
 - Mantenha somente `VITE_SUPABASE_ANON_KEY` no frontend.
 - As entradas passam por sanitização básica e validações no frontend.
@@ -116,8 +120,7 @@ supabase/
 
 ## Próximos Passos
 
-- Autenticação por usuário e senha
-- Policies RLS baseadas em usuários autenticados
+- Perfis de usuário e níveis de permissão
 - Deploy
 - Domínio próprio
 - Rotina de backup

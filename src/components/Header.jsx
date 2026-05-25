@@ -1,4 +1,4 @@
-export default function Header({ onCreateDress, disabled = false }) {
+export default function Header({ userEmail, onCreateDress, onSignOut, disabled = false }) {
   return (
     <header className="app-header">
       <div className="header-title">
@@ -8,14 +8,20 @@ export default function Header({ onCreateDress, disabled = false }) {
       <p className="header-summary">
         Gestão prática e segura de vestidos, reservas, aluguéis e devoluções.
       </p>
-      <button
-        className="button button-primary button-featured"
-        type="button"
-        onClick={onCreateDress}
-        disabled={disabled}
-      >
-        Cadastrar vestido
-      </button>
+      <div className="header-actions">
+        <span className="session-email">{userEmail}</span>
+        <button
+          className="button button-primary button-featured"
+          type="button"
+          onClick={onCreateDress}
+          disabled={disabled}
+        >
+          Cadastrar vestido
+        </button>
+        <button className="button button-secondary" type="button" onClick={onSignOut}>
+          Sair
+        </button>
+      </div>
     </header>
   )
 }

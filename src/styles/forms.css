@@ -1,8 +1,33 @@
 .modal-form-fields,
 .photo-upload-panel,
-.form-section {
+.form-section,
+.login-form {
   display: grid;
   gap: 0.9rem;
+}
+
+.login-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 1rem;
+  background: var(--surface-soft);
+}
+
+.login-card {
+  display: grid;
+  gap: 1.1rem;
+  width: min(440px, 100%);
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.login-summary {
+  color: var(--muted);
+  line-height: 1.5;
 }
 
 .form-section {

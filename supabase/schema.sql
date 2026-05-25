@@ -64,31 +64,47 @@ execute function public.set_updated_at();
 alter table public.dresses enable row level security;
 alter table public.rentals enable row level security;
 
--- Políticas temporárias para desenvolvimento interno sem login.
--- Antes de produção, substitua por políticas baseadas em auth.uid().
+-- Acesso interno com Supabase Auth.
+-- Crie os usuários em Authentication > Users antes de liberar o sistema.
 drop policy if exists "dev_select_dresses" on public.dresses;
-create policy "dev_select_dresses" on public.dresses for select using (true);
+drop policy if exists "authenticated_select_dresses" on public.dresses;
+create policy "authenticated_select_dresses" on public.dresses
+for select to authenticated using (true);
 
 drop policy if exists "dev_insert_dresses" on public.dresses;
-create policy "dev_insert_dresses" on public.dresses for insert with check (true);
+drop policy if exists "authenticated_insert_dresses" on public.dresses;
+create policy "authenticated_insert_dresses" on public.dresses
+for insert to authenticated with check (true);
 
 drop policy if exists "dev_update_dresses" on public.dresses;
-create policy "dev_update_dresses" on public.dresses for update using (true) with check (true);
+drop policy if exists "authenticated_update_dresses" on public.dresses;
+create policy "authenticated_update_dresses" on public.dresses
+for update to authenticated using (true) with check (true);
 
 drop policy if exists "dev_delete_dresses" on public.dresses;
-create policy "dev_delete_dresses" on public.dresses for delete using (true);
+drop policy if exists "authenticated_delete_dresses" on public.dresses;
+create policy "authenticated_delete_dresses" on public.dresses
+for delete to authenticated using (true);
 
 drop policy if exists "dev_select_rentals" on public.rentals;
-create policy "dev_select_rentals" on public.rentals for select using (true);
+drop policy if exists "authenticated_select_rentals" on public.rentals;
+create policy "authenticated_select_rentals" on public.rentals
+for select to authenticated using (true);
 
 drop policy if exists "dev_insert_rentals" on public.rentals;
-create policy "dev_insert_rentals" on public.rentals for insert with check (true);
+drop policy if exists "authenticated_insert_rentals" on public.rentals;
+create policy "authenticated_insert_rentals" on public.rentals
+for insert to authenticated with check (true);
 
 drop policy if exists "dev_update_rentals" on public.rentals;
-create policy "dev_update_rentals" on public.rentals for update using (true) with check (true);
+drop policy if exists "authenticated_update_rentals" on public.rentals;
+create policy "authenticated_update_rentals" on public.rentals
+for update to authenticated using (true) with check (true);
 
 drop policy if exists "dev_delete_rentals" on public.rentals;
-create policy "dev_delete_rentals" on public.rentals for delete using (true);
+drop policy if exists "authenticated_delete_rentals" on public.rentals;
+create policy "authenticated_delete_rentals" on public.rentals
+for delete to authenticated using (true);
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
@@ -104,17 +120,21 @@ on conflict (id) do update set
   allowed_mime_types = excluded.allowed_mime_types;
 
 drop policy if exists "dev_select_dress_photos" on storage.objects;
-create policy "dev_select_dress_photos" on storage.objects
+drop policy if exists "authenticated_select_dress_photos" on storage.objects;
+create policy "authenticated_select_dress_photos" on storage.objects
 for select using (bucket_id = 'dress-photos');
 
 drop policy if exists "dev_insert_dress_photos" on storage.objects;
-create policy "dev_insert_dress_photos" on storage.objects
-for insert with check (bucket_id = 'dress-photos');
+drop policy if exists "authenticated_insert_dress_photos" on storage.objects;
+create policy "authenticated_insert_dress_photos" on storage.objects
+for insert to authenticated with check (bucket_id = 'dress-photos');
 
 drop policy if exists "dev_update_dress_photos" on storage.objects;
-create policy "dev_update_dress_photos" on storage.objects
-for update using (bucket_id = 'dress-photos') with check (bucket_id = 'dress-photos');
+drop policy if exists "authenticated_update_dress_photos" on storage.objects;
+create policy "authenticated_update_dress_photos" on storage.objects
+for update to authenticated using (bucket_id = 'dress-photos') with check (bucket_id = 'dress-photos');
 
 drop policy if exists "dev_delete_dress_photos" on storage.objects;
-create policy "dev_delete_dress_photos" on storage.objects
-for delete using (bucket_id = 'dress-photos');
+drop policy if exists "authenticated_delete_dress_photos" on storage.objects;
+create policy "authenticated_delete_dress_photos" on storage.objects
+for delete to authenticated using (bucket_id = 'dress-photos');

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import Header from './components/Header.jsx'
+import Login from './components/Login.jsx'
 import DashboardCards from './components/DashboardCards.jsx'
 import DressCard from './components/DressCard.jsx'
 import DressDetailsModal from './components/DressDetailsModal.jsx'
@@ -17,16 +18,19 @@ import {
   markRentalReturned,
   updateRental,
 } from './services/rentalService.js'
+import { getCurrentSession, onAuthSessionChange, signOut } from './services/authService.js'
 import { filterDresses, getDressFilterOptions } from './utils/filterDresses.js'
 
 const emptyFilters = {
   query: '',
   status: 'todos',
   color: 'todas',
-  size: 'todas',
+  size: 'todos',
 }
 
 export default function App() {
+  const [session, setSession] = useState(null)
+  const [isAuthLoading, setIsAuthLoading] = useState(true)
   const [dresses, setDresses] = useState([])
   const [filters, setFilters] = useState(emptyFilters)
   const [selectedDressId, setSelectedDressId] = useState(null)
@@ -62,8 +66,38 @@ export default function App() {
   }
 
   useEffect(() => {
-    loadDresses()
+    let unsubscribe = () => {}
+
+    async function initializeAuth() {
+      try {
+        const currentSession = await getCurrentSession()
+        setSession(currentSession)
+        unsubscribe = onAuthSessionChange(setSession)
+      } catch (error) {
+        setNotice({
+          type: 'error',
+          message: error.message || 'Não foi possível verificar o acesso interno.',
+        })
+      } finally {
+        setIsAuthLoading(false)
+      }
+    }
+
+    initializeAuth()
+
+    return () => unsubscribe()
   }, [])
+
+  useEffect(() => {
+    if (session) {
+      loadDresses()
+      return
+    }
+
+    setDresses([])
+    setSelectedDressId(null)
+    setIsLoading(false)
+  }, [session])
 
   async function runAction(action, successMessage) {
     setIsSaving(true)
@@ -153,6 +187,19 @@ export default function App() {
     )
   }
 
+  async function handleSignOut() {
+    try {
+      setNotice(null)
+      await signOut()
+      setSession(null)
+    } catch (error) {
+      setNotice({
+        type: 'error',
+        message: error.message || 'Não foi possível sair.',
+      })
+    }
+  }
+
   const selectedDress = useMemo(
     () => dresses.find((dress) => dress.id === selectedDressId),
     [dresses, selectedDressId],
@@ -163,7 +210,7 @@ export default function App() {
   const hasActiveFilters =
     filters.status !== 'todos' ||
     filters.color !== 'todas' ||
-    filters.size !== 'todas' ||
+    filters.size !== 'todos' ||
     filters.query.trim() !== ''
   const emptyStateTitle =
     dresses.length === 0 ? 'Nenhum vestido cadastrado ainda' : 'Nenhum vestido encontrado'
@@ -172,10 +219,28 @@ export default function App() {
       ? 'Use o botão Cadastrar vestido para iniciar o acervo.'
       : 'Ajuste a busca ou limpe os filtros para ver o acervo completo.'
 
+  if (isAuthLoading) {
+    return (
+      <main className="login-page">
+        <section className="login-card">
+          <p className="eyebrow">Acesso interno</p>
+          <h1>Arraiá Control</h1>
+          <p className="login-summary">Verificando sessão...</p>
+        </section>
+      </main>
+    )
+  }
+
+  if (!session) {
+    return <Login onAuthenticated={setSession} />
+  }
+
   return (
     <div className="app-shell">
       <Header
+        userEmail={session.user?.email || ''}
         onCreateDress={() => setDressFormState({ open: true, dress: null })}
+        onSignOut={handleSignOut}
         disabled={isSaving}
       />
 
