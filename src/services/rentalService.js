@@ -6,6 +6,23 @@ function normalizeNumber(value) {
   return Number.isFinite(number) ? number : 0
 }
 
+function buildCustomerAddress(rentalData) {
+  const street = sanitizeText(rentalData.clienteRua)
+  const number = sanitizeText(rentalData.clienteNumero)
+  const complement = sanitizeText(rentalData.clienteComplemento)
+  const neighborhood = sanitizeText(rentalData.clienteBairro)
+  const city = sanitizeText(rentalData.clienteCidade)
+  const streetLine = [street, number].filter(Boolean).join(', ')
+  const details = [complement, neighborhood, city].filter(Boolean).join(' - ')
+
+  return [streetLine, details].filter(Boolean).join(' - ') || sanitizeText(rentalData.clienteEndereco)
+}
+
+function getFriendlySupabaseMessage(action, error) {
+  console.error(action, error)
+  return `${action}. Verifique os dados e tente novamente.`
+}
+
 function getTodayDate() {
   return new Date().toISOString().slice(0, 10)
 }
@@ -15,8 +32,13 @@ function mapRentalToDb(rentalData, dressId) {
     dress_id: dressId,
     customer_name: sanitizeText(rentalData.clienteNome),
     customer_phone: sanitizeText(rentalData.clienteTelefone),
-    customer_address: sanitizeText(rentalData.clienteEndereco),
     customer_cpf: sanitizeText(rentalData.clienteCpf),
+    customer_street: sanitizeText(rentalData.clienteRua),
+    customer_number: sanitizeText(rentalData.clienteNumero),
+    customer_address_complement: sanitizeText(rentalData.clienteComplemento),
+    customer_neighborhood: sanitizeText(rentalData.clienteBairro),
+    customer_city: sanitizeText(rentalData.clienteCidade),
+    customer_address: buildCustomerAddress(rentalData),
     party_date: sanitizeText(rentalData.dataFesta) || null,
     pickup_date: sanitizeText(rentalData.dataRetirada) || null,
     expected_return_date: sanitizeText(rentalData.dataDevolucaoPrevista) || null,
@@ -34,6 +56,11 @@ export function mapRentalRow(row) {
     clienteTelefone: row.customer_phone || '',
     clienteEndereco: row.customer_address || '',
     clienteCpf: row.customer_cpf || '',
+    clienteRua: row.customer_street || '',
+    clienteNumero: row.customer_number || '',
+    clienteComplemento: row.customer_address_complement || '',
+    clienteBairro: row.customer_neighborhood || '',
+    clienteCidade: row.customer_city || '',
     dataFesta: row.party_date || '',
     dataRetirada: row.pickup_date || '',
     dataDevolucaoPrevista: row.expected_return_date || '',
@@ -55,7 +82,7 @@ export async function fetchRentals() {
     .order('created_at', { ascending: false })
 
   if (error) {
-    throw new Error(`Não foi possível carregar os aluguéis: ${error.message}`)
+    throw new Error(getFriendlySupabaseMessage('Não foi possível carregar os aluguéis', error))
   }
 
   return data.map(mapRentalRow)
@@ -69,6 +96,10 @@ export async function createRental(dressId, rentalData) {
     throw new Error('Informe o nome da cliente e a data da festa.')
   }
 
+  if (!payload.customer_street || !payload.customer_number) {
+    throw new Error('Informe rua e número do endereço.')
+  }
+
   const { data: activeRental, error: activeError } = await supabase
     .from('rentals')
     .select('id')
@@ -77,7 +108,9 @@ export async function createRental(dressId, rentalData) {
     .maybeSingle()
 
   if (activeError) {
-    throw new Error(`Não foi possível verificar aluguel ativo: ${activeError.message}`)
+    throw new Error(
+      getFriendlySupabaseMessage('Não foi possível verificar se já existe aluguel ativo', activeError),
+    )
   }
 
   if (activeRental) {
@@ -90,7 +123,7 @@ export async function createRental(dressId, rentalData) {
   })
 
   if (rentalError) {
-    throw new Error(`Não foi possível registrar o aluguel: ${rentalError.message}`)
+    throw new Error(getFriendlySupabaseMessage('Não foi possível registrar o aluguel', rentalError))
   }
 
   const { error: dressError } = await supabase
@@ -100,7 +133,10 @@ export async function createRental(dressId, rentalData) {
 
   if (dressError) {
     throw new Error(
-      `Aluguel criado, mas o status do vestido não foi atualizado: ${dressError.message}`,
+      getFriendlySupabaseMessage(
+        'Aluguel criado, mas o status do vestido não foi atualizado',
+        dressError,
+      ),
     )
   }
 }
@@ -113,13 +149,17 @@ export async function updateRental(rentalId, rentalData) {
     throw new Error('Informe o nome da cliente e a data da festa.')
   }
 
+  if (!payload.customer_street || !payload.customer_number) {
+    throw new Error('Informe rua e número do endereço.')
+  }
+
   const { error } = await supabase
     .from('rentals')
     .update(payload)
     .eq('id', rentalId)
 
   if (error) {
-    throw new Error(`Não foi possível atualizar o aluguel: ${error.message}`)
+    throw new Error(getFriendlySupabaseMessage('Não foi possível atualizar o aluguel', error))
   }
 }
 
@@ -134,7 +174,7 @@ export async function markRentalReturned(rental) {
     .eq('id', rental.id)
 
   if (rentalError) {
-    throw new Error(`Não foi possível marcar a devolução: ${rentalError.message}`)
+    throw new Error(getFriendlySupabaseMessage('Não foi possível marcar a devolução', rentalError))
   }
 
   const { error: dressError } = await supabase
@@ -144,7 +184,10 @@ export async function markRentalReturned(rental) {
 
   if (dressError) {
     throw new Error(
-      `Devolução registrada, mas o vestido não voltou para disponível: ${dressError.message}`,
+      getFriendlySupabaseMessage(
+        'Devolução registrada, mas o vestido não voltou para disponível',
+        dressError,
+      ),
     )
   }
 }

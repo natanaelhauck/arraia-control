@@ -20,6 +20,11 @@ create table if not exists public.rentals (
   customer_phone text,
   customer_address text,
   customer_cpf text,
+  customer_street text,
+  customer_number text,
+  customer_address_complement text,
+  customer_neighborhood text,
+  customer_city text,
   party_date date not null,
   pickup_date date,
   expected_return_date date,
@@ -34,7 +39,12 @@ create table if not exists public.rentals (
 );
 
 alter table public.rentals
-add column if not exists customer_cpf text;
+add column if not exists customer_cpf text,
+add column if not exists customer_street text,
+add column if not exists customer_number text,
+add column if not exists customer_address_complement text,
+add column if not exists customer_neighborhood text,
+add column if not exists customer_city text;
 
 create index if not exists rentals_dress_id_idx on public.rentals(dress_id);
 create index if not exists rentals_status_idx on public.rentals(status);
