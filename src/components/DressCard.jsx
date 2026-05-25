@@ -18,6 +18,10 @@ export default function DressCard({ dress, onDetails }) {
 
         <dl className="dress-meta">
           <div>
+            <dt>Tipo</dt>
+            <dd title={dress.tipoPeca}>{dress.tipoPeca}</dd>
+          </div>
+          <div>
             <dt>Tamanho</dt>
             <dd title={dress.tamanho}>{dress.tamanho}</dd>
           </div>

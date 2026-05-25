@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import DressImage from './DressImage.jsx'
 import { validateDressPhoto } from '../services/imageService.js'
+import { DEFAULT_PIECE_TYPE, pieceTypeOptions } from '../utils/pieceTypes.js'
 
 const emptyForm = {
   codigo: '',
+  tipoPeca: DEFAULT_PIECE_TYPE,
   tamanho: '',
   cor: '',
   status: 'disponivel',
@@ -19,6 +21,7 @@ function getInitialForm(dress) {
 
   return {
     codigo: dress.codigo || '',
+    tipoPeca: dress.tipoPeca || DEFAULT_PIECE_TYPE,
     tamanho: dress.tamanho || '',
     cor: dress.cor || '',
     status: dress.status || 'disponivel',
@@ -138,8 +141,8 @@ export default function DressFormModal({
       (dress) => dress.id !== initialDress?.id && dress.codigo.toUpperCase() === codigo,
     )
 
-    if (!codigo || !formData.tamanho.trim() || !formData.cor.trim()) {
-      setError('Preencha código, tamanho e cor antes de salvar.')
+    if (!codigo || !formData.tipoPeca || !formData.tamanho.trim() || !formData.cor.trim()) {
+      setError('Preencha código, tipo de peça, tamanho e cor antes de salvar.')
       return
     }
 
@@ -219,6 +222,22 @@ export default function DressFormModal({
                   placeholder="A23"
                   autoComplete="off"
                 />
+              </label>
+
+              <label>
+                Tipo de peça
+                <select
+                  name="tipoPeca"
+                  value={formData.tipoPeca}
+                  onChange={updateField}
+                  required
+                >
+                  {pieceTypeOptions.map((pieceType) => (
+                    <option key={pieceType} value={pieceType}>
+                      {pieceType}
+                    </option>
+                  ))}
+                </select>
               </label>
 
               <label>

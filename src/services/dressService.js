@@ -2,6 +2,7 @@ import { requireSupabase } from '../lib/supabaseClient.js'
 import { uploadDressPhoto } from './imageService.js'
 import { fetchRentals } from './rentalService.js'
 import { sanitizeMultilineText, sanitizeText } from './sanitizeService.js'
+import { DEFAULT_PIECE_TYPE, pieceTypeOptions } from '../utils/pieceTypes.js'
 
 const manualStatuses = ['disponivel', 'reservado']
 
@@ -9,6 +10,7 @@ function mapDressRow(row) {
   return {
     id: row.id,
     codigo: row.code || '',
+    tipoPeca: row.piece_type || DEFAULT_PIECE_TYPE,
     tamanho: row.size || '',
     cor: row.color || '',
     status: row.status,
@@ -54,9 +56,14 @@ async function ensureCodeIsAvailable(code, ignoredDressId = null) {
 
 function normalizeDressPayload(dressData, photoUrl) {
   const code = sanitizeText(dressData.codigo).toUpperCase()
+  const pieceType = sanitizeText(dressData.tipoPeca || DEFAULT_PIECE_TYPE)
 
   if (!code) {
     throw new Error('Informe o código do vestido.')
+  }
+
+  if (!pieceTypeOptions.includes(pieceType)) {
+    throw new Error('Informe um tipo de peça válido.')
   }
 
   if (!sanitizeText(dressData.tamanho) || !sanitizeText(dressData.cor)) {
@@ -65,6 +72,7 @@ function normalizeDressPayload(dressData, photoUrl) {
 
   return {
     code,
+    piece_type: pieceType,
     size: sanitizeText(dressData.tamanho).toUpperCase(),
     color: sanitizeText(dressData.cor),
     status: manualStatuses.includes(dressData.status) ? dressData.status : 'disponivel',

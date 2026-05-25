@@ -96,6 +96,10 @@ export default function DressDetailsModal({
                   <dd>{dress.codigo}</dd>
                 </div>
                 <div>
+                  <dt>Tipo de peça</dt>
+                  <dd>{dress.tipoPeca}</dd>
+                </div>
+                <div>
                   <dt>Tamanho</dt>
                   <dd>{dress.tamanho}</dd>
                 </div>

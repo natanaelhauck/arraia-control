@@ -3,6 +3,7 @@ create extension if not exists "pgcrypto";
 create table if not exists public.dresses (
   id uuid primary key default gen_random_uuid(),
   code text not null unique,
+  piece_type text not null default 'Vestido',
   size text,
   color text,
   status text not null default 'disponivel',

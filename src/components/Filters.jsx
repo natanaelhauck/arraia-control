@@ -1,6 +1,14 @@
-export default function Filters({ filters, colorOptions, sizeOptions, onChange, onReset }) {
+export default function Filters({
+  filters,
+  colorOptions,
+  pieceTypeOptions,
+  sizeOptions,
+  onChange,
+  onReset,
+}) {
   const hasActiveFilters =
     filters.status !== 'todos' ||
+    (filters.pieceType || 'todos') !== 'todos' ||
     filters.color !== 'todas' ||
     filters.size !== 'todos' ||
     filters.query.trim() !== ''
@@ -30,6 +38,18 @@ export default function Filters({ filters, colorOptions, sizeOptions, onChange, 
           <option value="disponivel">Disponíveis</option>
           <option value="alugado">Alugados</option>
           <option value="reservado">Reservados</option>
+        </select>
+      </label>
+
+      <label>
+        Tipo de peça
+        <select name="pieceType" value={filters.pieceType || 'todos'} onChange={updateField}>
+          <option value="todos">Todos</option>
+          {pieceTypeOptions.map((pieceType) => (
+            <option key={pieceType} value={pieceType}>
+              {pieceType}
+            </option>
+          ))}
         </select>
       </label>
 

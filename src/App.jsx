@@ -25,6 +25,7 @@ import { filterDresses, getDressFilterOptions } from './utils/filterDresses.js'
 const emptyFilters = {
   query: '',
   status: 'todos',
+  pieceType: 'todos',
   color: 'todas',
   size: 'todos',
 }
@@ -242,6 +243,7 @@ export default function App() {
   const filterOptions = useMemo(() => getDressFilterOptions(dresses), [dresses])
   const hasActiveFilters =
     filters.status !== 'todos' ||
+    filters.pieceType !== 'todos' ||
     filters.color !== 'todas' ||
     filters.size !== 'todos' ||
     filters.query.trim() !== ''
@@ -293,6 +295,7 @@ export default function App() {
           <Filters
             filters={filters}
             colorOptions={filterOptions.colors}
+            pieceTypeOptions={filterOptions.pieceTypes}
             sizeOptions={filterOptions.sizes}
             onChange={setFilters}
             onReset={() => setFilters(emptyFilters)}

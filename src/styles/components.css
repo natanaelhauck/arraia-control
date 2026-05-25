@@ -95,7 +95,7 @@
 
 .filters-panel {
   display: grid;
-  grid-template-columns: minmax(280px, 1.7fr) repeat(3, minmax(140px, 0.55fr)) auto;
+  grid-template-columns: minmax(280px, 1.6fr) repeat(4, minmax(132px, 0.55fr)) auto;
   align-items: end;
   gap: 1rem;
   padding: 1rem;
@@ -336,7 +336,7 @@
 }
 
 .dress-meta {
-  grid-template-columns: 92px minmax(0, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .dress-meta dd {
@@ -393,7 +393,7 @@
 }
 
 .detail-list.compact {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .wide {
