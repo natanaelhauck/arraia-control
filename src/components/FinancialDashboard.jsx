@@ -89,7 +89,7 @@ function FinancialRentalRow({ rental }) {
   )
 }
 
-export default function FinancialDashboard({ dresses, isLoading = false }) {
+export default function FinancialDashboard({ dresses, isLoading = false, showHeading = true }) {
   const [filters, setFilters] = useState(initialFilters)
   const rentals = useMemo(() => getFinancialRentals(dresses), [dresses])
   const filteredRentals = useMemo(
@@ -106,12 +106,18 @@ export default function FinancialDashboard({ dresses, isLoading = false }) {
   }
 
   return (
-    <section className="financial-dashboard" aria-labelledby="financial-title">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">Financeiro</p>
-          <h2 id="financial-title">Resumo financeiro</h2>
-        </div>
+    <section
+      className="financial-dashboard"
+      aria-labelledby={showHeading ? 'financial-title' : undefined}
+      aria-label={showHeading ? undefined : 'Conteudo financeiro'}
+    >
+      <div className={showHeading ? 'section-heading' : 'financial-toolbar'}>
+        {showHeading ? (
+          <div>
+            <p className="eyebrow">Financeiro</p>
+            <h2 id="financial-title">Resumo financeiro</h2>
+          </div>
+        ) : null}
         <div className="financial-filters">
           <label>
             Período

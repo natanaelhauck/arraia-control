@@ -6,7 +6,7 @@ import DressCard from './components/DressCard.jsx'
 import DressDetailsModal from './components/DressDetailsModal.jsx'
 import DressFormModal from './components/DressFormModal.jsx'
 import Filters from './components/Filters.jsx'
-import FinancialDashboard from './components/FinancialDashboard.jsx'
+import FinancialDashboardModal from './components/FinancialDashboardModal.jsx'
 import RentalFormModal from './components/RentalFormModal.jsx'
 import {
   createDress,
@@ -41,6 +41,7 @@ export default function App() {
   const [notice, setNotice] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isFinancialOpen, setIsFinancialOpen] = useState(false)
   const [dressFormState, setDressFormState] = useState({ open: false, dress: null })
   const [rentalFormState, setRentalFormState] = useState({
     open: false,
@@ -270,6 +271,7 @@ export default function App() {
     <div className="app-shell">
       <Header
         onCreateDress={() => setDressFormState({ open: true, dress: null })}
+        onOpenFinancial={() => setIsFinancialOpen(true)}
         onSignOut={handleSignOut}
         disabled={isSaving}
       />
@@ -286,7 +288,6 @@ export default function App() {
 
       <main className="app-main">
         <DashboardCards dresses={dresses} />
-        <FinancialDashboard dresses={dresses} isLoading={isLoading} />
 
         <section className="content-stack" aria-label="Área principal">
           <Filters
@@ -352,6 +353,13 @@ export default function App() {
           </section>
         </section>
       </main>
+
+      <FinancialDashboardModal
+        open={isFinancialOpen}
+        dresses={dresses}
+        isLoading={isLoading}
+        onClose={() => setIsFinancialOpen(false)}
+      />
 
       <DressFormModal
         open={dressFormState.open}

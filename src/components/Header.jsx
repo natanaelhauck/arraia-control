@@ -1,4 +1,4 @@
-export default function Header({ onCreateDress, onSignOut, disabled = false }) {
+export default function Header({ onCreateDress, onOpenFinancial, onSignOut, disabled = false }) {
   return (
     <header className="app-header">
       <div className="header-brand">
@@ -18,6 +18,17 @@ export default function Header({ onCreateDress, onSignOut, disabled = false }) {
           disabled={disabled}
         >
           Cadastrar vestido
+        </button>
+        <button
+          className="button button-secondary button-with-icon"
+          type="button"
+          onClick={onOpenFinancial}
+          disabled={disabled}
+        >
+          <span className="button-icon" aria-hidden="true">
+            R$
+          </span>
+          Financeiro
         </button>
         <button className="button button-secondary" type="button" onClick={onSignOut}>
           Sair

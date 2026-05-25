@@ -487,6 +487,22 @@
   gap: 0.6rem;
 }
 
+.button-with-icon {
+  gap: 0.5rem;
+}
+
+.button-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 1.45rem;
+  height: 1.45rem;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--primary-strong);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
 .icon-button {
   display: inline-grid;
   place-items: center;
@@ -602,6 +618,45 @@
   padding: 1.5rem;
 }
 
+.financial-modal-backdrop {
+  z-index: 25;
+  background: rgba(20, 29, 42, 0.68);
+}
+
+.financial-modal {
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  max-width: 1400px;
+  height: 85vh;
+  max-height: 85vh;
+  border-radius: 8px;
+  box-shadow: 0 24px 70px rgba(20, 29, 42, 0.26);
+}
+
+.financial-modal-header {
+  flex: 0 0 auto;
+  background: var(--surface);
+}
+
+.financial-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 1.25rem;
+  background: var(--surface-soft);
+}
+
+.financial-modal-body .financial-dashboard {
+  margin-bottom: 0;
+}
+
+.financial-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
 @media (max-width: 900px) {
   .filters-panel,
   .detail-list,
@@ -624,6 +679,12 @@
 
   .financial-rental-row dd {
     white-space: normal;
+  }
+
+  .financial-modal {
+    width: 94%;
+    height: 88vh;
+    max-height: 88vh;
   }
 
   .detail-title-row {
@@ -661,5 +722,25 @@
 
   .financial-return-card span {
     white-space: normal;
+  }
+
+  .financial-modal-backdrop {
+    padding: 0.5rem;
+  }
+
+  .financial-modal {
+    width: 95%;
+    height: 95vh;
+    min-height: auto;
+    max-height: 95vh;
+    border-radius: 8px;
+  }
+
+  .financial-modal-body {
+    padding: 1rem;
+  }
+
+  .financial-toolbar {
+    justify-content: stretch;
   }
 }
