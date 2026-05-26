@@ -232,3 +232,19 @@ export async function cancelRental(rental) {
 
   await syncDressStatusFromRentals(rental.vestidoId)
 }
+
+export async function deleteRentalHistoryRecord(rental) {
+  const supabase = requireSupabase()
+
+  if (rental.status !== 'devolvido' && rental.status !== 'cancelado') {
+    throw new Error('Somente registros do histórico podem ser excluídos.')
+  }
+
+  const { error } = await supabase.from('rentals').delete().eq('id', rental.id)
+
+  if (error) {
+    throw new Error(
+      getFriendlySupabaseMessage('Não foi possível excluir o registro de aluguel', error),
+    )
+  }
+}

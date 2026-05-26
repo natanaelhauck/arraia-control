@@ -17,6 +17,7 @@ import {
 import {
   cancelRental,
   createRental,
+  deleteRentalHistoryRecord,
   markRentalReturned,
   updateRental,
 } from './services/rentalService.js'
@@ -232,6 +233,13 @@ export default function App() {
     )
   }
 
+  async function handleDeleteRentalHistoryRecord(rental) {
+    return runAction(
+      () => deleteRentalHistoryRecord(rental),
+      'Registro de aluguel excluído com sucesso.',
+    )
+  }
+
   async function handleSignOut() {
     try {
       setNotice(null)
@@ -391,6 +399,7 @@ export default function App() {
           onEditRental={(dress, rental) => setRentalFormState({ open: true, dress, rental })}
           onMarkReturned={handleMarkReturned}
           onCancelRental={handleCancelRental}
+          onDeleteRentalHistoryRecord={handleDeleteRentalHistoryRecord}
         />
       ) : null}
 

@@ -33,6 +33,7 @@ export default function DressDetailsModal({
   onEditRental,
   onMarkReturned,
   onCancelRental,
+  onDeleteRentalHistoryRecord,
 }) {
   if (!dress) {
     return null
@@ -67,6 +68,16 @@ export default function DressDetailsModal({
 
     if (window.confirm(`Excluir definitivamente o vestido ${dress.codigo}?\n\n${warning}`)) {
       onDeleteDress(dress)
+    }
+  }
+
+  function confirmDeleteHistoryRecord(rental) {
+    const didConfirm = window.confirm(
+      'Tem certeza que deseja excluir este registro do histórico? Essa ação não poderá ser desfeita.',
+    )
+
+    if (didConfirm) {
+      onDeleteRentalHistoryRecord(rental)
     }
   }
 
@@ -237,6 +248,15 @@ export default function DressDetailsModal({
                         key={rental.id}
                         rental={rental}
                         date={rental.dataDevolucaoReal || rental.updatedAt}
+                        actions={
+                          <button
+                            className="button button-danger button-subtle-danger"
+                            type="button"
+                            onClick={() => confirmDeleteHistoryRecord(rental)}
+                          >
+                            Excluir registro
+                          </button>
+                        }
                       />
                     ))}
                   </div>

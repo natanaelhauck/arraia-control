@@ -481,6 +481,19 @@
   background: #ffd3cf;
 }
 
+.button-subtle-danger {
+  min-height: 36px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ffd3cf;
+  background: #fff7f7;
+  color: var(--primary-strong);
+  font-size: 0.82rem;
+}
+
+.button-subtle-danger:hover {
+  background: var(--danger-soft);
+}
+
 .button-row,
 .detail-media-actions {
   display: flex;
