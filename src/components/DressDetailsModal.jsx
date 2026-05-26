@@ -9,6 +9,21 @@ const rentalStatusLabels = {
   cancelado: 'Cancelado',
 }
 
+function RentalCard({ rental, actions, date }) {
+  return (
+    <article className="history-card">
+      <div className="history-card-header">
+        <span className={`rental-status rental-status-${rental.status || 'cancelado'}`}>
+          {rentalStatusLabels[rental.status] || 'Cancelado'}
+        </span>
+        <span>{formatDate(date || rental.dataFesta)}</span>
+      </div>
+      <RentalInfo rental={rental} />
+      {actions ? <div className="button-row rental-card-actions">{actions}</div> : null}
+    </article>
+  )
+}
+
 export default function DressDetailsModal({
   dress,
   onClose,
@@ -17,24 +32,36 @@ export default function DressDetailsModal({
   onRegisterRental,
   onEditRental,
   onMarkReturned,
+  onCancelRental,
 }) {
   if (!dress) {
     return null
   }
 
-  function confirmReturn() {
+  function confirmReturn(rental) {
     const didConfirm = window.confirm(
-      `Confirmar devolução do vestido ${dress.codigo}?\n\nO aluguel atual será finalizado e movido para o histórico.`,
+      `Confirmar devolução do aluguel de ${rental.clienteNome}?\n\nSomente este aluguel será finalizado e movido para o histórico.`,
     )
 
-    if (didConfirm && dress.currentRental) {
-      onMarkReturned(dress.currentRental)
+    if (didConfirm) {
+      onMarkReturned(rental)
+    }
+  }
+
+  function confirmCancel(rental) {
+    const didConfirm = window.confirm(
+      `Cancelar o aluguel/reserva de ${rental.clienteNome} para ${formatDate(rental.dataFesta)}?\n\nSomente este registro será cancelado.`,
+    )
+
+    if (didConfirm) {
+      onCancelRental(rental)
     }
   }
 
   function confirmDelete() {
-    const warning = dress.currentRental
-      ? 'Este vestido está alugado. A exclusão removerá também o aluguel atual e todo o histórico.'
+    const hasActiveRentals = (dress.activeRentals || []).length > 0
+    const warning = hasActiveRentals
+      ? 'Este vestido possui aluguéis/reservas ativos. A exclusão removerá também esses registros e todo o histórico.'
       : 'Esta ação removerá o vestido e todo o histórico de aluguéis.'
 
     if (window.confirm(`Excluir definitivamente o vestido ${dress.codigo}?\n\n${warning}`)) {
@@ -42,11 +69,8 @@ export default function DressDetailsModal({
     }
   }
 
-  const rentalHistory = [...dress.rentalHistory].sort((first, second) => {
-    const firstDate = first.updatedAt || first.createdAt || ''
-    const secondDate = second.updatedAt || second.createdAt || ''
-    return String(secondDate).localeCompare(String(firstDate))
-  })
+  const futureReservations = dress.futureReservations || []
+  const rentalHistory = dress.rentalHistory || []
 
   return (
     <div className="modal-backdrop" role="presentation">
@@ -117,34 +141,80 @@ export default function DressDetailsModal({
             <section className="detail-section">
               <div className="detail-title-row">
                 <h3>Aluguel atual</h3>
-                {dress.currentRental ? (
-                  <div className="button-row">
-                    <button
-                      className="button button-secondary"
-                      type="button"
-                      onClick={() => onEditRental(dress, dress.currentRental)}
-                    >
-                      Editar aluguel
-                    </button>
-                    <button className="button button-success" type="button" onClick={confirmReturn}>
-                      Marcar como devolvido
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    className="button button-primary"
-                    type="button"
-                    onClick={() => onRegisterRental(dress)}
-                  >
-                    Registrar aluguel
-                  </button>
-                )}
+                <button
+                  className="button button-primary"
+                  type="button"
+                  onClick={() => onRegisterRental(dress)}
+                >
+                  Registrar aluguel
+                </button>
               </div>
 
               {dress.currentRental ? (
-                <RentalInfo rental={dress.currentRental} />
+                <RentalCard
+                  rental={dress.currentRental}
+                  actions={
+                    <>
+                      <button
+                        className="button button-secondary"
+                        type="button"
+                        onClick={() => onEditRental(dress, dress.currentRental)}
+                      >
+                        Editar aluguel
+                      </button>
+                      <button
+                        className="button button-success"
+                        type="button"
+                        onClick={() => confirmReturn(dress.currentRental)}
+                      >
+                        Marcar como devolvido
+                      </button>
+                    </>
+                  }
+                />
               ) : (
-                <p className="muted-text">Não existe aluguel ativo para este vestido.</p>
+                <p className="muted-text">Não existe aluguel em andamento para este vestido.</p>
+              )}
+            </section>
+
+            <section className="detail-section">
+              <div className="detail-title-row">
+                <h3>Próximas reservas</h3>
+                <span className="result-count">{futureReservations.length} registros</span>
+              </div>
+
+              {futureReservations.length > 0 ? (
+                <div className="history-scroll history-scroll-compact">
+                  <div className="history-list">
+                    {futureReservations.map((rental) => (
+                      <RentalCard
+                        key={rental.id}
+                        rental={rental}
+                        date={rental.dataFesta}
+                        actions={
+                          <>
+                            <button
+                              className="button button-secondary"
+                              type="button"
+                              onClick={() => onEditRental(dress, rental)}
+                            >
+                              Editar aluguel
+                            </button>
+                            <button
+                              className="button button-danger"
+                              type="button"
+                              onClick={() => confirmCancel(rental)}
+                            >
+                              Cancelar reserva
+                            </button>
+                          </>
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className="muted-text">Nenhuma reserva futura cadastrada.</p>
               )}
             </section>
 
@@ -155,23 +225,17 @@ export default function DressDetailsModal({
                 <div className="history-scroll">
                   <div className="history-list">
                     {rentalHistory.map((rental) => (
-                      <article className="history-card" key={rental.id}>
-                        <div className="history-card-header">
-                          <span
-                            className={`rental-status rental-status-${rental.status || 'cancelado'}`}
-                          >
-                            {rentalStatusLabels[rental.status] || 'Cancelado'}
-                          </span>
-                          <span>{formatDate(rental.dataDevolucaoReal || rental.updatedAt)}</span>
-                        </div>
-                        <RentalInfo rental={rental} />
-                      </article>
+                      <RentalCard
+                        key={rental.id}
+                        rental={rental}
+                        date={rental.dataDevolucaoReal || rental.updatedAt}
+                      />
                     ))}
                   </div>
                 </div>
               ) : (
                 <p className="muted-text">
-                  Quando um vestido alugado for devolvido, o registro aparecerá aqui.
+                  Quando um vestido alugado for devolvido ou cancelado, o registro aparecerá aqui.
                 </p>
               )}
             </section>

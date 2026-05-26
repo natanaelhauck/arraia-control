@@ -3,6 +3,7 @@ import { uploadDressPhoto } from './imageService.js'
 import { fetchRentals } from './rentalService.js'
 import { sanitizeMultilineText, sanitizeText } from './sanitizeService.js'
 import { DEFAULT_PIECE_TYPE, pieceTypeOptions } from '../utils/pieceTypes.js'
+import { calculateVisualDressStatus, getRentalSchedule } from '../utils/rentalSchedule.js'
 
 const manualStatuses = ['disponivel', 'reservado']
 
@@ -22,18 +23,19 @@ function mapDressRow(row) {
 }
 
 function composeDress(dress, rentals) {
-  const currentRental = rentals.find(
-    (rental) => rental.vestidoId === dress.id && rental.status === 'ativo',
-  )
-  const rentalHistory = rentals
-    .filter((rental) => rental.vestidoId === dress.id && rental.status !== 'ativo')
-    .sort((first, second) => String(second.updatedAt).localeCompare(String(first.updatedAt)))
+  const dressRentals = rentals.filter((rental) => rental.vestidoId === dress.id)
+  const schedule = getRentalSchedule(dressRentals)
 
   return {
     ...dress,
-    status: currentRental ? 'alugado' : dress.status,
-    currentRental: currentRental || null,
-    rentalHistory,
+    status: calculateVisualDressStatus(dress.status, dressRentals),
+    allRentals: dressRentals,
+    activeRentals: schedule.activeRentals,
+    currentRental: schedule.currentRental,
+    currentRentals: schedule.currentRentals,
+    futureReservations: schedule.futureReservations,
+    nextReservation: schedule.nextReservation,
+    rentalHistory: schedule.rentalHistory,
   }
 }
 

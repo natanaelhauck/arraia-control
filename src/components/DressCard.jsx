@@ -3,6 +3,9 @@ import StatusBadge from './StatusBadge.jsx'
 import { formatDate } from '../utils/formatters.js'
 
 export default function DressCard({ dress, onDetails }) {
+  const hasCurrentRental = Boolean(dress.currentRental)
+  const nextReservation = dress.nextReservation
+
   return (
     <article className="dress-card">
       <DressImage dress={dress} size="card" />
@@ -31,7 +34,7 @@ export default function DressCard({ dress, onDetails }) {
           </div>
         </dl>
 
-        {dress.currentRental ? (
+        {hasCurrentRental ? (
           <div className="card-note card-note-rental">
             <p className="card-note-line">
               <strong>Cliente:</strong>
@@ -40,6 +43,23 @@ export default function DressCard({ dress, onDetails }) {
             <p className="card-note-line">
               <strong>Devolução:</strong>
               <span>{formatDate(dress.currentRental.dataDevolucaoPrevista)}</span>
+            </p>
+            {nextReservation ? (
+              <p className="card-note-line">
+                <strong>Próxima reserva:</strong>
+                <span>{formatDate(nextReservation.dataFesta)}</span>
+              </p>
+            ) : null}
+          </div>
+        ) : nextReservation ? (
+          <div className="card-note card-note-rental">
+            <p className="card-note-line">
+              <strong>Próxima reserva:</strong>
+              <span>{formatDate(nextReservation.dataFesta)}</span>
+            </p>
+            <p className="card-note-line">
+              <strong>Cliente:</strong>
+              <span title={nextReservation.clienteNome}>{nextReservation.clienteNome}</span>
             </p>
           </div>
         ) : (

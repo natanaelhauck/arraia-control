@@ -184,12 +184,11 @@ export default function RentalFormModal({
       return 'O sinal pago não pode ser maior que o valor total.'
     }
 
-    if (
-      formData.dataRetirada &&
-      formData.dataDevolucaoPrevista &&
-      formData.dataDevolucaoPrevista < formData.dataRetirada
-    ) {
-      return 'A devolução prevista não pode ser antes da retirada.'
+    const periodStart = formData.dataRetirada || formData.dataFesta
+    const periodEnd = formData.dataDevolucaoPrevista || formData.dataFesta
+
+    if (periodEnd < periodStart) {
+      return 'A devolução prevista não pode ser antes do início do período.'
     }
 
     return ''
@@ -224,7 +223,7 @@ export default function RentalFormModal({
         <div className="modal-header">
           <div>
             <p className="eyebrow">{isEditing ? 'Correção de dados' : 'Novo aluguel'}</p>
-            <h2>{isEditing ? 'Editar aluguel atual' : `Registrar aluguel - ${dress.codigo}`}</h2>
+            <h2>{isEditing ? 'Editar aluguel' : `Registrar aluguel - ${dress.codigo}`}</h2>
           </div>
           <button className="icon-button" type="button" aria-label="Fechar" onClick={onClose}>
             X

@@ -1,6 +1,8 @@
 import { formatCurrency, formatDate } from '../utils/formatters.js'
 
 export default function RentalInfo({ rental }) {
+  const pendingAmount = Math.max(Number(rental.valor || 0) - Number(rental.sinalPago || 0), 0)
+
   return (
     <dl className="detail-list">
       <div>
@@ -38,6 +40,10 @@ export default function RentalInfo({ rental }) {
       <div>
         <dt>Sinal pago</dt>
         <dd>{formatCurrency(rental.sinalPago)}</dd>
+      </div>
+      <div>
+        <dt>Pendente</dt>
+        <dd>{formatCurrency(rental.status === 'ativo' ? pendingAmount : 0)}</dd>
       </div>
       {rental.observacoes ? (
         <div className="wide">

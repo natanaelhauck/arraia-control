@@ -553,6 +553,10 @@
   padding-right: 0.25rem;
 }
 
+.history-scroll-compact {
+  max-height: 360px;
+}
+
 .history-card {
   display: grid;
   gap: 0.65rem;
@@ -574,6 +578,10 @@
 
 .history-card-header {
   align-items: center;
+}
+
+.rental-card-actions {
+  justify-content: flex-end;
 }
 
 .rental-status {
@@ -699,6 +707,10 @@
 
   .button-row .button {
     flex: 1 1 180px;
+  }
+
+  .rental-card-actions {
+    justify-content: stretch;
   }
 
   .dress-image-large,

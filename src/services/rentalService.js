@@ -1,5 +1,13 @@
 import { requireSupabase } from '../lib/supabaseClient.js'
 import { sanitizeMultilineText, sanitizeText } from './sanitizeService.js'
+import {
+  calculateVisualDressStatus,
+  findConflictingRental,
+  getTodayString,
+} from '../utils/rentalSchedule.js'
+
+const RENTAL_CONFLICT_MESSAGE =
+  'Esta peça já possui aluguel/reserva nesse período. Escolha outra data ou verifique a agenda.'
 
 function normalizeNumber(value) {
   const number = Number(value)
@@ -24,7 +32,16 @@ function getFriendlySupabaseMessage(action, error) {
 }
 
 function getTodayDate() {
-  return new Date().toISOString().slice(0, 10)
+  return getTodayString()
+}
+
+function validateRentalPeriod(payload) {
+  const periodStart = payload.pickup_date || payload.party_date
+  const periodEnd = payload.expected_return_date || payload.party_date
+
+  if (periodStart && periodEnd && periodEnd < periodStart) {
+    throw new Error('A devolução prevista não pode ser antes do início do período.')
+  }
 }
 
 function mapRentalToDb(rentalData, dressId) {
@@ -45,6 +62,49 @@ function mapRentalToDb(rentalData, dressId) {
     total_amount: normalizeNumber(rentalData.valor),
     deposit_amount: normalizeNumber(rentalData.sinalPago),
     notes: sanitizeMultilineText(rentalData.observacoes),
+  }
+}
+
+async function fetchActiveRentalsForDress(dressId) {
+  const supabase = requireSupabase()
+  const { data, error } = await supabase
+    .from('rentals')
+    .select('id, status, party_date, pickup_date, expected_return_date')
+    .eq('dress_id', dressId)
+    .eq('status', 'ativo')
+
+  if (error) {
+    throw new Error(
+      getFriendlySupabaseMessage('Não foi possível verificar a agenda da peça', error),
+    )
+  }
+
+  return data || []
+}
+
+async function ensureRentalDoesNotConflict(dressId, rentalData, ignoredRentalId = null) {
+  const activeRentals = await fetchActiveRentalsForDress(dressId)
+  const conflictingRental = findConflictingRental(activeRentals, rentalData, ignoredRentalId)
+
+  if (conflictingRental) {
+    throw new Error(RENTAL_CONFLICT_MESSAGE)
+  }
+}
+
+async function syncDressStatusFromRentals(dressId) {
+  const supabase = requireSupabase()
+  const activeRentals = await fetchActiveRentalsForDress(dressId)
+  const status = calculateVisualDressStatus('disponivel', activeRentals)
+
+  const { error } = await supabase.from('dresses').update({ status }).eq('id', dressId)
+
+  if (error) {
+    throw new Error(
+      getFriendlySupabaseMessage(
+        'Aluguel atualizado, mas o status da peça não foi sincronizado',
+        error,
+      ),
+    )
   }
 }
 
@@ -100,22 +160,8 @@ export async function createRental(dressId, rentalData) {
     throw new Error('Informe rua e número do endereço.')
   }
 
-  const { data: activeRental, error: activeError } = await supabase
-    .from('rentals')
-    .select('id')
-    .eq('dress_id', dressId)
-    .eq('status', 'ativo')
-    .maybeSingle()
-
-  if (activeError) {
-    throw new Error(
-      getFriendlySupabaseMessage('Não foi possível verificar se já existe aluguel ativo', activeError),
-    )
-  }
-
-  if (activeRental) {
-    throw new Error('Este vestido já possui um aluguel ativo.')
-  }
+  validateRentalPeriod(payload)
+  await ensureRentalDoesNotConflict(dressId, payload)
 
   const { error: rentalError } = await supabase.from('rentals').insert({
     ...payload,
@@ -126,19 +172,7 @@ export async function createRental(dressId, rentalData) {
     throw new Error(getFriendlySupabaseMessage('Não foi possível registrar o aluguel', rentalError))
   }
 
-  const { error: dressError } = await supabase
-    .from('dresses')
-    .update({ status: 'alugado' })
-    .eq('id', dressId)
-
-  if (dressError) {
-    throw new Error(
-      getFriendlySupabaseMessage(
-        'Aluguel criado, mas o status do vestido não foi atualizado',
-        dressError,
-      ),
-    )
-  }
+  await syncDressStatusFromRentals(dressId)
 }
 
 export async function updateRental(rentalId, rentalData) {
@@ -153,6 +187,9 @@ export async function updateRental(rentalId, rentalData) {
     throw new Error('Informe rua e número do endereço.')
   }
 
+  validateRentalPeriod(payload)
+  await ensureRentalDoesNotConflict(rentalData.vestidoId, payload, rentalId)
+
   const { error } = await supabase
     .from('rentals')
     .update(payload)
@@ -161,6 +198,8 @@ export async function updateRental(rentalId, rentalData) {
   if (error) {
     throw new Error(getFriendlySupabaseMessage('Não foi possível atualizar o aluguel', error))
   }
+
+  await syncDressStatusFromRentals(rentalData.vestidoId)
 }
 
 export async function markRentalReturned(rental) {
@@ -177,17 +216,19 @@ export async function markRentalReturned(rental) {
     throw new Error(getFriendlySupabaseMessage('Não foi possível marcar a devolução', rentalError))
   }
 
-  const { error: dressError } = await supabase
-    .from('dresses')
-    .update({ status: 'disponivel' })
-    .eq('id', rental.vestidoId)
+  await syncDressStatusFromRentals(rental.vestidoId)
+}
 
-  if (dressError) {
-    throw new Error(
-      getFriendlySupabaseMessage(
-        'Devolução registrada, mas o vestido não voltou para disponível',
-        dressError,
-      ),
-    )
+export async function cancelRental(rental) {
+  const supabase = requireSupabase()
+  const { error } = await supabase
+    .from('rentals')
+    .update({ status: 'cancelado' })
+    .eq('id', rental.id)
+
+  if (error) {
+    throw new Error(getFriendlySupabaseMessage('Não foi possível cancelar o aluguel', error))
   }
+
+  await syncDressStatusFromRentals(rental.vestidoId)
 }

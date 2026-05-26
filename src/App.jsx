@@ -15,6 +15,7 @@ import {
   updateDress,
 } from './services/dressService.js'
 import {
+  cancelRental,
   createRental,
   markRentalReturned,
   updateRental,
@@ -224,6 +225,13 @@ export default function App() {
     )
   }
 
+  async function handleCancelRental(rental) {
+    return runAction(
+      () => cancelRental(rental),
+      'Aluguel cancelado com sucesso.',
+    )
+  }
+
   async function handleSignOut() {
     try {
       setNotice(null)
@@ -382,6 +390,7 @@ export default function App() {
           onRegisterRental={(dress) => setRentalFormState({ open: true, dress, rental: null })}
           onEditRental={(dress, rental) => setRentalFormState({ open: true, dress, rental })}
           onMarkReturned={handleMarkReturned}
+          onCancelRental={handleCancelRental}
         />
       ) : null}
 

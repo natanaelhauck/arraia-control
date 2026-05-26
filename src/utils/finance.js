@@ -124,8 +124,12 @@ export function getRentalStatusLabel(status) {
 export function getFinancialRentals(dresses) {
   return dresses
     .flatMap((dress) => {
-      const currentRental = dress.currentRental ? [dress.currentRental] : []
-      return [...currentRental, ...(dress.rentalHistory || [])].map((rental) => ({
+      const rentals = dress.allRentals || [
+        ...(dress.activeRentals || []),
+        ...(dress.rentalHistory || []),
+      ]
+
+      return rentals.map((rental) => ({
         ...rental,
         vestidoCodigo: dress.codigo,
       }))
@@ -154,6 +158,10 @@ export function calculateFinancialSummary(rentals) {
     (summary, rental) => {
       const totalAmount = Number(rental.valor || 0)
       const depositAmount = Number(rental.sinalPago || 0)
+
+      if (rental.status === 'cancelado') {
+        return summary
+      }
 
       if (rental.status === 'ativo' || rental.status === 'devolvido') {
         summary.expectedRevenue += totalAmount
