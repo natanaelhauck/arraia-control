@@ -59,7 +59,7 @@ export function doRentalIntervalsOverlap(firstRental, secondRental) {
     return false
   }
 
-  return firstInterval.start <= secondInterval.end && secondInterval.start <= firstInterval.end
+  return firstInterval.start < secondInterval.end && secondInterval.start < firstInterval.end
 }
 
 export function findConflictingRental(rentals, rentalData, ignoredRentalId = null) {

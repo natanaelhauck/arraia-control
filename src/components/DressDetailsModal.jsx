@@ -48,10 +48,11 @@ export default function DressDetailsModal({
     }
   }
 
-  function confirmCancel(rental) {
-    const didConfirm = window.confirm(
-      `Cancelar o aluguel/reserva de ${rental.clienteNome} para ${formatDate(rental.dataFesta)}?\n\nSomente este registro será cancelado.`,
-    )
+  function confirmCancel(rental, isCurrentRental = false) {
+    const message = isCurrentRental
+      ? 'Tem certeza que deseja cancelar este aluguel? Essa ação removerá este aluguel da agenda ativa.'
+      : `Cancelar o aluguel/reserva de ${rental.clienteNome} para ${formatDate(rental.dataFesta)}?\n\nSomente este registro será cancelado.`
+    const didConfirm = window.confirm(message)
 
     if (didConfirm) {
       onCancelRental(rental)
@@ -168,6 +169,13 @@ export default function DressDetailsModal({
                         onClick={() => confirmReturn(dress.currentRental)}
                       >
                         Marcar como devolvido
+                      </button>
+                      <button
+                        className="button button-danger"
+                        type="button"
+                        onClick={() => confirmCancel(dress.currentRental, true)}
+                      >
+                        Cancelar aluguel
                       </button>
                     </>
                   }
